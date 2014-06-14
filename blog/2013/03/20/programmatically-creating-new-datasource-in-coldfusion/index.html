@@ -1,0 +1,331 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Programmatically Creating New Datasource in Coldfusion - Sean Walsh</title>
+  <meta name="author" content="Sean Walsh">
+
+  
+  <meta name="description" content="I got a new laptop at work. Awesome, right? This thing is blazing fast and a huge upgrade. Unfortunately, I needed to set up my entire local &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://swalsh.org/blog/2013/03/20/programmatically-creating-new-datasource-in-coldfusion">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Sean Walsh" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+
+  
+
+</head>
+
+<body    class="collapse-sidebar sidebar-footer" >
+  <nav role="navigation">
+
+<ul class="main-navigation">
+  <li><a href="/">Home</a></li>
+  <li><a href="/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <header role="banner"><div class='hero'>
+	<div class='wrap'>
+	  <h1><a href="/">Sean Walsh</a></h1>
+	  
+	</div>
+</div>
+
+</header>
+  
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Programmatically Creating New Datasource in Coldfusion</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-20T14:23:15-07:00" pubdate data-updated="true">Mar 20<span>th</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>I got a new laptop at work. Awesome, right? This thing is blazing fast and a huge upgrade. Unfortunately, I needed to set up my entire local development environment all over again. I managed it with some quick and dirty batch scripts, but I was still left with the tedious task of creating datasources for each of the 40ish MySQL databases that I had imported. Each datasource entry is identical except for the database name, so I figured there must be a better way of doing it than manually creating each entry. Sure enough, there is&hellip;</p>
+
+<!-- more -->
+
+
+<p>The ColdFusion administrator offers a pretty nice <a href="http://help.adobe.com/en_US/ColdFusion/9.0/Admin/WSc3ff6d0ea77859461172e0811cbf364104-7fcf.html">API</a> that you can interact with to do things such as create mappings, manage debug settings, and a plethora of other stuff. Of course, you can also create datasources with it and it is dead simple to do. For my method to work, you do have to have at least one existing datasource, but I&rsquo;m sure you could just create that programmatically as well.</p>
+
+<p>The code below uses the SHOW DATABASES command to get a list of all MySQL databases, and then creates a datasource for each. It will create datasources for stuff like information_schema and performance_schema, so you will have to manually delete those if you don&rsquo;t want them.</p>
+
+<script src="https://gist.github.com/2141097.js"> </script>
+
+
+<p>This isn&rsquo;t really something that I&rsquo;ll be using all that frequently, but I figured I&rsquo;d share it in case anyone else wanted to save themselves half an hour of setting up datasources.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Sean Walsh</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-20T14:23:15-07:00" pubdate data-updated="true">Mar 20<span>th</span>, 2013</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://swalsh.org/blog/2013/03/20/programmatically-creating-new-datasource-in-coldfusion/" data-via="theseanwalsh" data-counturl="http://swalsh.org/blog/2013/03/20/programmatically-creating-new-datasource-in-coldfusion/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2011/12/07/integrating-sendgrid-with-your-coldfusion-application/" title="Previous Post: Integrating SendGrid With Your ColdFusion Application">&laquo; Integrating SendGrid With Your ColdFusion Application</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2013/04/22/chrome-logger-api-for-coldfusion/" title="Next Post: Chrome Logger API for ColdFusion">Chrome Logger API for ColdFusion &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+<!-- 
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/06/14/changes/">Changes!</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/04/22/chrome-logger-api-for-coldfusion/">Chrome Logger API for ColdFusion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/03/20/programmatically-creating-new-datasource-in-coldfusion/">Programmatically Creating New Datasource in Coldfusion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/12/07/integrating-sendgrid-with-your-coldfusion-application/">Integrating SendGrid With Your ColdFusion Application</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/s992">@s992</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 's992',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+ -->
+
+    </div>
+  </div>
+  <!-- <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Sean Walsh -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+
+
+</footer> -->
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'swalsh';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://swalsh.org/blog/2013/03/20/programmatically-creating-new-datasource-in-coldfusion/';
+        var disqus_url = 'http://swalsh.org/blog/2013/03/20/programmatically-creating-new-datasource-in-coldfusion/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+  
+  <aside class="sidebar">
+    
+      <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/06/14/changes/">Changes!</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/04/22/chrome-logger-api-for-coldfusion/">Chrome Logger API for ColdFusion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/03/20/programmatically-creating-new-datasource-in-coldfusion/">Programmatically Creating New Datasource in Coldfusion</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/12/07/integrating-sendgrid-with-your-coldfusion-application/">Integrating SendGrid With Your ColdFusion Application</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/s992">@s992</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 's992',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+    
+  </aside>
+  
+</body>
+
+
+</html>
