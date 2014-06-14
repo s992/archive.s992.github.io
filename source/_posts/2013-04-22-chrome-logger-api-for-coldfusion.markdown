@@ -7,7 +7,7 @@ categories:
 ---
 About two weeks ago, I spotted a link on either Reddit or Hacker News to a Google Chrome extension called [Chrome Logger](http://www.chromelogger.com/). I immediately saw the potential, because I frequently want to `cfdump` something but have to either abort immediately after or worry about my dump disappearing into a thread, screwing up my layout, etc., etc. There were libraries available for PHP, Python, and Ruby at the time (Node was added recently as well), so I figured I may as well jump on board and put one together for CF.
 
-I finished my preliminary work on the component last weekend and used it at work all week, fixing bugs as I came across them. I'm now reasonably confident that it can be put into the wild, so I'm pleased to announce version 0.1 of chromelogger-cf, hosted at http://www.github.com/s992/chromelogger-cf.
+I finished my preliminary work on the component last weekend and used it at work all week, fixing bugs as I came across them. I'm now reasonably confident that it can be put into the wild, so I'm pleased to announce version 0.1 of chromelogger-cf, hosted at http://www.github.com/s992/chromelogger-cf
 
 In addition to logging simple values, structs, arrays, and queries, I've also added a method to convert objects (primarily ORM entities) into a struct representation, including relationships.
 
