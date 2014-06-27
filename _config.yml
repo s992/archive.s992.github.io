@@ -71,7 +71,7 @@ github_skip_forks: true
 
 # Twitter
 twitter_user: theseanwalsh
-twitter_tweet_button: true
+twitter_tweet_button: false
 
 # Google +1
 google_plus_one: false
@@ -95,7 +95,7 @@ disqus_short_name: swalsh
 disqus_show_comment_count: false
 
 # Google Analytics
-google_analytics_tracking_id:
+google_analytics_tracking_id: UA-52344422-1
 
 # Facebook Like
 facebook_like: false
