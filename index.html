@@ -9,7 +9,7 @@
   <meta name="author" content="Sean Walsh">
 
   
-  <meta name="description" content="As I was going over my tentative itinerary for GR8Conf (my first Groovy conference!), I spotted a session titled, &ldquo;Functional testing your &hellip;">
+  <meta name="description" content="Occasionally I&rsquo;ll run into someone who is having trouble debugging their Angular application and their first complaint is almost always the &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -70,6 +70,52 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/07/01/quick-tip-angular-debugging/">Quick Tip: Angular Debugging</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-07-01T18:34:40-07:00" pubdate data-updated="true">Jul 1<span>st</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Occasionally I&rsquo;ll run into someone who is having trouble debugging their Angular application and their first complaint is almost always the incomprehensible error messages. You know the type, they look like this:</p>
+
+<p><img src="/images/angulardebug/angular-minified-error.png"></p>
+
+<p>You&rsquo;ll see ugly error messages like that when you are using the <em>minified</em> version of Angular. But, don&rsquo;t lose hope! You can find a full error message with a (sometimes) helpful explanation by just hitting the link immediately following <code>Error: [$injector:unpr]</code>. I find that a lot of people tend to gloss over that URL when confronted with the ugly error. For an example of where that link takes you, you can try this one from the screenshot: <a href="https://docs.angularjs.org/error/$injector/unpr?p0=iDontExistProvider%20%3C-%20iDontExist">https://docs.angularjs.org/error/$injector/unpr?p0=iDontExistProvider%20%3C-%20iDontExist</a>. It&rsquo;s obviously a contrived error for the sake of this post, but it will give you an idea of what to expect.</p>
+
+<p>Now, if you&rsquo;re working in a development environment and battling ugly error messages, you can swap out your minified Angular for the unminified version and get a nicer error:</p>
+
+<p><img src="/images/angulardebug/angular-unminified-error.png"></p>
+
+<p>Now we can see what&rsquo;s going on at a glance (in this case, Angular&rsquo;s dependency injection can&rsquo;t find <code>iDontExist</code>), but we still have access to the URL in case we need more information.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -367,6 +413,10 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2014/07/01/quick-tip-angular-debugging/">Quick Tip: Angular Debugging</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2014/06/25/groovy-browser-automation-with-geb/">Groovy Browser Automation With Geb</a>
       </li>
     
@@ -380,10 +430,6 @@
     
       <li class="post">
         <a href="/blog/2013/03/20/programmatically-creating-new-datasource-in-coldfusion/">Programmatically Creating New Datasource in Coldfusion</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2011/12/07/integrating-sendgrid-with-your-coldfusion-application/">Integrating SendGrid With Your ColdFusion Application</a>
       </li>
     
   </ul>

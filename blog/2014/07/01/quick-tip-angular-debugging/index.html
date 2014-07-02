@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Changes! - Sean Walsh</title>
+  <title>Quick Tip: Angular Debugging - Sean Walsh</title>
   <meta name="author" content="Sean Walsh">
 
   
-  <meta name="description" content="Well, this site has been sitting around unattended since my last post over a year ago. I figured it was about time to make some changes, so I took &hellip;">
+  <meta name="description" content="Occasionally I&rsquo;ll run into someone who is having trouble debugging their Angular application and their first complaint is almost always the &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://swalsh.org/blog/2014/06/14/changes">
+  <link rel="canonical" href="http://swalsh.org/blog/2014/07/01/quick-tip-angular-debugging">
   <link href="/favicon.ico" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Sean Walsh" type="application/atom+xml">
@@ -73,7 +73,7 @@
   
   <header>
     
-      <h1 class="entry-title">Changes!</h1>
+      <h1 class="entry-title">Quick Tip: Angular Debugging</h1>
     
     
       <p class="meta">
@@ -89,16 +89,24 @@
   
 
 
-<time datetime="2014-06-14T14:55:54-07:00" pubdate data-updated="true">Jun 14<span>th</span>, 2014</time>
+<time datetime="2014-07-01T18:34:40-07:00" pubdate data-updated="true">Jul 1<span>st</span>, 2014</time>
         
       </p>
     
   </header>
 
 
-<div class="entry-content"><p>Well, this site has been sitting around unattended since my last post over a year ago. I figured it was about time to make some changes, so I took the opportunity to look into <a href="http://octopress.org/">Octopress</a> and here I am. I transferred a couple of posts over and plan to move some more this weekend. Unfortunately, I&rsquo;m going to lose all of the comments from my previous blog due to changing the commenting platform to Disqus.</p>
+<div class="entry-content"><p>Occasionally I&rsquo;ll run into someone who is having trouble debugging their Angular application and their first complaint is almost always the incomprehensible error messages. You know the type, they look like this:</p>
 
-<p>I&rsquo;m hoping that a new platform will encourage me to start posting more often, so stay tuned!</p>
+<p><img src="/images/angulardebug/angular-minified-error.png"></p>
+
+<p>You&rsquo;ll see ugly error messages like that when you are using the <em>minified</em> version of Angular. But, don&rsquo;t lose hope! You can find a full error message with a (sometimes) helpful explanation by just hitting the link immediately following <code>Error: [$injector:unpr]</code>. I find that a lot of people tend to gloss over that URL when confronted with the ugly error. For an example of where that link takes you, you can try this one from the screenshot: <a href="https://docs.angularjs.org/error/$injector/unpr?p0=iDontExistProvider%20%3C-%20iDontExist">https://docs.angularjs.org/error/$injector/unpr?p0=iDontExistProvider%20%3C-%20iDontExist</a>. It&rsquo;s obviously a contrived error for the sake of this post, but it will give you an idea of what to expect.</p>
+
+<p>Now, if you&rsquo;re working in a development environment and battling ugly error messages, you can swap out your minified Angular for the unminified version and get a nicer error:</p>
+
+<p><img src="/images/angulardebug/angular-unminified-error.png"></p>
+
+<p>Now we can see what&rsquo;s going on at a glance (in this case, Angular&rsquo;s dependency injection can&rsquo;t find <code>iDontExist</code>), but we still have access to the URL in case we need more information.</p>
 </div>
 
 
@@ -121,7 +129,7 @@
   
 
 
-<time datetime="2014-06-14T14:55:54-07:00" pubdate data-updated="true">Jun 14<span>th</span>, 2014</time>
+<time datetime="2014-07-01T18:34:40-07:00" pubdate data-updated="true">Jul 1<span>st</span>, 2014</time>
       
 
 
@@ -136,10 +144,8 @@
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2013/04/22/chrome-logger-api-for-coldfusion/" title="Previous Post: Chrome Logger API for ColdFusion">&laquo; Chrome Logger API for ColdFusion</a>
+        <a class="basic-alignment left" href="/blog/2014/06/25/groovy-browser-automation-with-geb/" title="Previous Post: Groovy Browser Automation with Geb">&laquo; Groovy Browser Automation with Geb</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2014/06/25/groovy-browser-automation-with-geb/" title="Next Post: Groovy Browser Automation with Geb">Groovy Browser Automation with Geb &raquo;</a>
       
     </p>
   </footer>
@@ -236,8 +242,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://swalsh.org/blog/2014/06/14/changes/';
-        var disqus_url = 'http://swalsh.org/blog/2014/06/14/changes/';
+        var disqus_identifier = 'http://swalsh.org/blog/2014/07/01/quick-tip-angular-debugging/';
+        var disqus_url = 'http://swalsh.org/blog/2014/07/01/quick-tip-angular-debugging/';
         var disqus_script = 'embed.js';
       
     (function () {

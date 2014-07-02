@@ -4,7 +4,7 @@
   <title><![CDATA[Sean Walsh]]></title>
   <link href="http://swalsh.org/atom.xml" rel="self"/>
   <link href="http://swalsh.org/"/>
-  <updated>2014-06-26T21:03:04-07:00</updated>
+  <updated>2014-07-01T18:56:45-07:00</updated>
   <id>http://swalsh.org/</id>
   <author>
     <name><![CDATA[Sean Walsh]]></name>
@@ -12,6 +12,25 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Quick Tip: Angular Debugging]]></title>
+    <link href="http://swalsh.org/blog/2014/07/01/quick-tip-angular-debugging/"/>
+    <updated>2014-07-01T18:34:40-07:00</updated>
+    <id>http://swalsh.org/blog/2014/07/01/quick-tip-angular-debugging</id>
+    <content type="html"><![CDATA[<p>Occasionally I&rsquo;ll run into someone who is having trouble debugging their Angular application and their first complaint is almost always the incomprehensible error messages. You know the type, they look like this:</p>
+
+<p><img src="http://swalsh.org/images/angulardebug/angular-minified-error.png"></p>
+
+<p>You&rsquo;ll see ugly error messages like that when you are using the <em>minified</em> version of Angular. But, don&rsquo;t lose hope! You can find a full error message with a (sometimes) helpful explanation by just hitting the link immediately following <code>Error: [$injector:unpr]</code>. I find that a lot of people tend to gloss over that URL when confronted with the ugly error. For an example of where that link takes you, you can try this one from the screenshot: <a href="https://docs.angularjs.org/error/$injector/unpr?p0=iDontExistProvider%20%3C-%20iDontExist">https://docs.angularjs.org/error/$injector/unpr?p0=iDontExistProvider%20%3C-%20iDontExist</a>. It&rsquo;s obviously a contrived error for the sake of this post, but it will give you an idea of what to expect.</p>
+
+<p>Now, if you&rsquo;re working in a development environment and battling ugly error messages, you can swap out your minified Angular for the unminified version and get a nicer error:</p>
+
+<p><img src="http://swalsh.org/images/angulardebug/angular-unminified-error.png"></p>
+
+<p>Now we can see what&rsquo;s going on at a glance (in this case, Angular&rsquo;s dependency injection can&rsquo;t find <code>iDontExist</code>), but we still have access to the URL in case we need more information.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Groovy Browser Automation With Geb]]></title>
