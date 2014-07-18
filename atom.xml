@@ -4,7 +4,7 @@
   <title><![CDATA[Sean Walsh]]></title>
   <link href="http://swalsh.org/atom.xml" rel="self"/>
   <link href="http://swalsh.org/"/>
-  <updated>2014-07-01T18:56:45-07:00</updated>
+  <updated>2014-07-17T20:40:07-07:00</updated>
   <id>http://swalsh.org/</id>
   <author>
     <name><![CDATA[Sean Walsh]]></name>
@@ -12,6 +12,156 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Running the Groovy Console From Gradle]]></title>
+    <link href="http://swalsh.org/blog/2014/07/17/running-the-groovy-console-from-gradle/"/>
+    <updated>2014-07-17T19:47:43-07:00</updated>
+    <id>http://swalsh.org/blog/2014/07/17/running-the-groovy-console-from-gradle</id>
+    <content type="html"><![CDATA[<p>I tend to write stuff iteratively. I&rsquo;ll write a little chunk, then poke at it a bit, then write some more, and so on. The Groovy Console is a great tool for doing so, but one thing that just hasn&rsquo;t &ldquo;clicked&rdquo; with me yet is the concept of dependencies, classpaths, and all the dependency management stuff in between (Maven, Gradle, Ivy, etc.).</p>
+
+<p>I quickly found myself frustrated with my lack of understanding, so I got in to the bad habit of just pasting all my classes right into the Groovy Console window and playing around with them right there. As my toy projects grew larger (and especially once they started relying on external dependencies), this became unworkable.</p>
+
+<p>I did some poking around and found three ways to run the Groovy Console from Gradle, which (as far as I can tell) populates the Groovy Console classpath with everything I need for my project.</p>
+
+<!-- more -->
+
+
+<p>The first option I found is a quick snippet from <a href="http://piraguaconsulting.blogspot.com/2012/02/gradle-groovy-console.html">Mike Hugo&rsquo;s blog</a>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">task</span><span class="o">(</span> <span class="n">console</span><span class="o">,</span> <span class="nl">dependsOn:</span> <span class="s2">&quot;classes&quot;</span><span class="o">,</span> <span class="nl">type:</span> <span class="n">JavaExec</span> <span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">main</span> <span class="o">=</span> <span class="s2">&quot;groovy.ui.Console&quot;</span>
+</span><span class='line'>  <span class="n">classpath</span> <span class="o">=</span> <span class="n">sourceSets</span><span class="o">.</span><span class="na">main</span><span class="o">.</span><span class="na">runtimeClasspath</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This works great and can just be dropped in to your <code>build.gradle</code>, like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">apply</span> <span class="nl">plugin:</span> <span class="s2">&quot;groovy&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">task</span><span class="o">(</span> <span class="n">console</span><span class="o">,</span> <span class="nl">dependsOn:</span> <span class="s2">&quot;classes&quot;</span><span class="o">,</span> <span class="nl">type:</span> <span class="n">JavaExec</span> <span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">main</span> <span class="o">=</span> <span class="s2">&quot;groovy.ui.Console&quot;</span>
+</span><span class='line'>  <span class="n">classpath</span> <span class="o">=</span> <span class="n">sourceSets</span><span class="o">.</span><span class="na">main</span><span class="o">.</span><span class="na">runtimeClasspath</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">repositories</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">mavenCentral</span><span class="o">()</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">dependencies</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">compile</span> <span class="s1">&#39;org.codehaus.groovy:groovy-all:2.3.4&#39;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>You can just run <code>gradle console</code> from the project root to fire up the Groovy Console.</p>
+
+<p>I didn&rsquo;t have to look far for the next option &ndash; it was right in the comments on Mike&rsquo;s blog! Inspired by the post, Carlos Souza created a <a href="https://github.com/carlosgsouza/gradle-console">Gradle plugin</a> to add the <code>console</code> task to your project:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">apply</span> <span class="nl">plugin:</span> <span class="s2">&quot;groovy&quot;</span>
+</span><span class='line'><span class="n">apply</span> <span class="nl">plugin:</span> <span class="s2">&quot;console&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">repositories</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">mavenCentral</span><span class="o">()</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">dependencies</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">compile</span> <span class="s1">&#39;org.codehaus.groovy:groovy-all:2.3.3&#39;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">buildscript</span> <span class="o">{</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">repositories</span> <span class="o">{</span>
+</span><span class='line'>      <span class="n">mavenCentral</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">dependencies</span> <span class="o">{</span>
+</span><span class='line'>      <span class="n">classpath</span> <span class="s2">&quot;net.carlosgsouza:gradle-console:1.0&quot;</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This plugin works the same way as Mike&rsquo;s does, but I did run into a bit of an issue. If you&rsquo;ve been reading (very) closely, you&rsquo;ll notice that in this version of my build script I dropped the version of my Groovy dependency from 2.3.4 to 2.3.3. When running <code>gradle console</code> with 2.3.4, I received this exception:</p>
+
+<p><code>Conflicting module versions. Module groovy-all is loaded in version 2.3.3 and you are trying to load version 2.3.4</code></p>
+
+<p>I couldn&rsquo;t find much info on the error, but, as far as I can tell, I probably have multiple versions of Groovy in my classpath. I do have both 2.3.3 and 2.3.4 on my system, so I&rsquo;ll just chalk it up to poor configuration on my part.</p>
+
+<p>The final option is the <a href="http://www.gradle.org/docs/current/userguide/application_plugin.html">application plugin</a>. By applying the plugin and setting <code>mainClassName = "groovy.ui.Console"</code>, we can use <code>gradle run</code> to launch the Groovy Console.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">apply</span> <span class="nl">plugin:</span> <span class="s2">&quot;groovy&quot;</span>
+</span><span class='line'><span class="n">apply</span> <span class="nl">plugin:</span> <span class="s2">&quot;application&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">mainClassName</span> <span class="o">=</span> <span class="s2">&quot;groovy.ui.Console&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">repositories</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">mavenCentral</span><span class="o">()</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">dependencies</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">compile</span> <span class="s1">&#39;org.codehaus.groovy:groovy-all:2.3.4&#39;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Each option seems to work just as well as the others, but I prefer the application plugin simply because it requires fewer lines than the other two.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Quick Tip: Angular Debugging]]></title>
