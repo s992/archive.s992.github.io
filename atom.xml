@@ -4,7 +4,7 @@
   <title><![CDATA[Sean Walsh]]></title>
   <link href="http://swalsh.org/atom.xml" rel="self"/>
   <link href="http://swalsh.org/"/>
-  <updated>2014-07-17T20:40:07-07:00</updated>
+  <updated>2014-08-26T18:39:51-07:00</updated>
   <id>http://swalsh.org/</id>
   <author>
     <name><![CDATA[Sean Walsh]]></name>
@@ -12,6 +12,83 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Ratpack: First Impressions]]></title>
+    <link href="http://swalsh.org/blog/2014/08/26/ratpack-first-impressions/"/>
+    <updated>2014-08-26T17:21:28-07:00</updated>
+    <id>http://swalsh.org/blog/2014/08/26/ratpack-first-impressions</id>
+    <content type="html"><![CDATA[<p>I first heard about <a href="http://www.ratpack.io/">Ratpack</a> about a month ago at Gr8Conf US. I didn&rsquo;t make room in my schedule to go to any of the sessions, but I did add it to my (long) list of stuff to check out. Most things that end up on that list have a 50/50 chance of ever making it into my editor.</p>
+
+<p>Luckily, I found an excuse to check it out &ndash; and I&rsquo;m glad I did. My current project at work requires me to interface with a third party web based API, but that API doesn&rsquo;t actually exist just yet. Using Ratpack, I was able to quickly mock up the API and then code against my mock. Unfortunately (or maybe fortunately!), the application <em>is</em> for work and I can&rsquo;t share it. What I can share, however, is my first impression of Ratpack.</p>
+
+<!-- more -->
+
+
+<h3>Documentation</h3>
+
+<p>The first thing I do when I&rsquo;m checking out a new library or framework is head straight to the documentation. Ratpack has a <a href="http://www.ratpack.io/manual/current/index.html">manual</a> as well as <a href="http://www.ratpack.io/manual/current/api/">API docs</a>. The manual (as described in the <a href="http://www.ratpack.io/manual/current/intro.html#how_to_read_the_documentation">&ldquo;How to read the documentation&rdquo;</a> section) features a high level overview of Ratpack concepts.</p>
+
+<p>Looking through the manual, it&rsquo;s obvious that Ratpack is a work in progress. Several sections are missing entirely and replaced by &ldquo;TODO&rdquo; blocks. This was a point of frustration, but between the manual and the API docs I was able to get enough of an understanding to cobble a workable application together. Building a Ratpack application today requires some research and frustrated Googling, but ultimately I was able to find everything I needed.</p>
+
+<p>I imagine the manual in its current state will be more useful for non-Groovy projects, as it seems that a majority of the &ldquo;TODO&rdquo; blocks are located in the <a href="http://www.ratpack.io/manual/current/groovy.html#groovy">Groovy section</a>.</p>
+
+<h3>Examples</h3>
+
+<p>After I&rsquo;m done scanning the documentation, I like to check out examples of the codebase. There&rsquo;s no shortage of example Ratpack applications: you can find five examples <a href="https://github.com/ratpack">here</a>, three of which are Groovy based &ndash; example-books, example-ratpack-gradle-groovy-app, and example-ratpack-standalone-groovy-script.</p>
+
+<p>I was working with Gradle, so I checked out example-ratpack-gradle-groovy-app first. Unfortunately, it hasn&rsquo;t been touched in eight months and seems to have stopped working. I was unable to build it, so I moved on to example-books, which is also Gradle based. This one ran, and I was able to poke around a little bit and get a feel for it.</p>
+
+<p>I should note that at this time I didn&rsquo;t really have a strong understanding of how a Ratpack application is structured. There&rsquo;s a lot of stuff going on in example-books, and most of it went right over my head. I ultimately ended up cutting down example-books to create a completely barebones Ratpack example that doesn&rsquo;t really do anything, but writing it helped me get a better grasp on what exactly was necessary to get a Ratpack application started. You can find that example <a href="https://github.com/ratpack/example-books.git">here</a>.</p>
+
+<h3>Setup</h3>
+
+<p>The manual lists two options under the &ldquo;Setup&rdquo; heading: the Gradle plugin and Lazybones project templates. At this point, I had no desire to look into Lazybones (which, by the way, seems like a fine project &ndash; you can find it right <a href="https://github.com/pledbrook/lazybones">here</a> on GitHub), so I headed to the <a href="http://www.ratpack.io/manual/current/setup.html#using_the_gradle_plugins">Gradle section</a>. Unfortunately, it&rsquo;s one of the sections that has nothing but a &ldquo;TODO.&rdquo;</p>
+
+<p>There is another section of the manual dedicated to <a href="http://www.ratpack.io/manual/current/gradle.html#building_with_gradle">building with Gradle</a>, so I&rsquo;m not really sure what the maintainers are planning to add to the Setup > Gradle section. Regardless, I was able to find what I was looking for in this section and it was trivial to create a Gradle build file that would run my (not yet created) Ratpack application.</p>
+
+<h3>Coding</h3>
+
+<p>One of my favorite things about Groovy is how easy an API can be to work with when using DSLs. Ratpack is no exception: all of your endpoints are configured via the handlers DSL. Here&rsquo;s an example of an application with two endpoints: <code>/hello</code> and <code>/goodbye</code>.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">ratpack</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">handlers</span> <span class="o">{</span>
+</span><span class='line'>      <span class="n">get</span><span class="o">(</span><span class="s2">&quot;hello&quot;</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>          <span class="n">render</span> <span class="s2">&quot;Hello, World!&quot;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="n">get</span><span class="o">(</span><span class="s2">&quot;goodbye&quot;</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>          <span class="n">render</span> <span class="s2">&quot;Goodbye, World!&quot;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>It works exactly as you would expect it to &ndash; when navigating to example.com/hello, &ldquo;Hello, World!&rdquo; is sent to the browser. And, of course, navigating to example.com/goodbye results in &ldquo;Goodbye, World!&rdquo;</p>
+
+<p>Later this week, I&rsquo;ll be writing another post that looks at the code behind a Ratpack application more in depth. For now, I&rsquo;ll just say that I found Ratpack&rsquo;s DSL very intuitive and I enjoyed writing code with it.</p>
+
+<h3>Community</h3>
+
+<p>This is a short bullet point, but I just wanted to point out that there is a <a href="http://forum.ratpack.io/">forum</a> for discussing Ratpack. The forum seems fairly active and I was able to find some very helpful information there.</p>
+
+<h3>Final Thoughts</h3>
+
+<p>I found Ratpack to be an enjoyable framework to work with. If you don&rsquo;t mind referencing a few different sources of documentation (and probably a bit of trial and error), I would highly recommend checking it out.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Running the Groovy Console From Gradle]]></title>

@@ -1,0 +1,393 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Ratpack: First Impressions - Sean Walsh</title>
+  <meta name="author" content="Sean Walsh">
+
+  
+  <meta name="description" content="I first heard about Ratpack about a month ago at Gr8Conf US. I didn&rsquo;t make room in my schedule to go to any of the sessions, but I did add it &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://swalsh.org/blog/2014/08/26/ratpack-first-impressions">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Sean Walsh" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-52344422-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body    class="collapse-sidebar sidebar-footer" >
+  <nav role="navigation">
+
+<ul class="main-navigation">
+  <li><a href="/">Home</a></li>
+  <li><a href="/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <!-- <header role="banner"><div class='hero'>
+	<div class='wrap'>
+	  <h1><a href="/">Sean Walsh</a></h1>
+	  
+	</div>
+</div>
+
+</header> -->
+  
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Ratpack: First Impressions</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-08-26T17:21:28-07:00" pubdate data-updated="true">Aug 26<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>I first heard about <a href="http://www.ratpack.io/">Ratpack</a> about a month ago at Gr8Conf US. I didn&rsquo;t make room in my schedule to go to any of the sessions, but I did add it to my (long) list of stuff to check out. Most things that end up on that list have a 50/50 chance of ever making it into my editor.</p>
+
+<p>Luckily, I found an excuse to check it out &ndash; and I&rsquo;m glad I did. My current project at work requires me to interface with a third party web based API, but that API doesn&rsquo;t actually exist just yet. Using Ratpack, I was able to quickly mock up the API and then code against my mock. Unfortunately (or maybe fortunately!), the application <em>is</em> for work and I can&rsquo;t share it. What I can share, however, is my first impression of Ratpack.</p>
+
+<!-- more -->
+
+
+<h3>Documentation</h3>
+
+<p>The first thing I do when I&rsquo;m checking out a new library or framework is head straight to the documentation. Ratpack has a <a href="http://www.ratpack.io/manual/current/index.html">manual</a> as well as <a href="http://www.ratpack.io/manual/current/api/">API docs</a>. The manual (as described in the <a href="http://www.ratpack.io/manual/current/intro.html#how_to_read_the_documentation">&ldquo;How to read the documentation&rdquo;</a> section) features a high level overview of Ratpack concepts.</p>
+
+<p>Looking through the manual, it&rsquo;s obvious that Ratpack is a work in progress. Several sections are missing entirely and replaced by &ldquo;TODO&rdquo; blocks. This was a point of frustration, but between the manual and the API docs I was able to get enough of an understanding to cobble a workable application together. Building a Ratpack application today requires some research and frustrated Googling, but ultimately I was able to find everything I needed.</p>
+
+<p>I imagine the manual in its current state will be more useful for non-Groovy projects, as it seems that a majority of the &ldquo;TODO&rdquo; blocks are located in the <a href="http://www.ratpack.io/manual/current/groovy.html#groovy">Groovy section</a>.</p>
+
+<h3>Examples</h3>
+
+<p>After I&rsquo;m done scanning the documentation, I like to check out examples of the codebase. There&rsquo;s no shortage of example Ratpack applications: you can find five examples <a href="https://github.com/ratpack">here</a>, three of which are Groovy based &ndash; example-books, example-ratpack-gradle-groovy-app, and example-ratpack-standalone-groovy-script.</p>
+
+<p>I was working with Gradle, so I checked out example-ratpack-gradle-groovy-app first. Unfortunately, it hasn&rsquo;t been touched in eight months and seems to have stopped working. I was unable to build it, so I moved on to example-books, which is also Gradle based. This one ran, and I was able to poke around a little bit and get a feel for it.</p>
+
+<p>I should note that at this time I didn&rsquo;t really have a strong understanding of how a Ratpack application is structured. There&rsquo;s a lot of stuff going on in example-books, and most of it went right over my head. I ultimately ended up cutting down example-books to create a completely barebones Ratpack example that doesn&rsquo;t really do anything, but writing it helped me get a better grasp on what exactly was necessary to get a Ratpack application started. You can find that example <a href="https://github.com/ratpack/example-books.git">here</a>.</p>
+
+<h3>Setup</h3>
+
+<p>The manual lists two options under the &ldquo;Setup&rdquo; heading: the Gradle plugin and Lazybones project templates. At this point, I had no desire to look into Lazybones (which, by the way, seems like a fine project &ndash; you can find it right <a href="https://github.com/pledbrook/lazybones">here</a> on GitHub), so I headed to the <a href="http://www.ratpack.io/manual/current/setup.html#using_the_gradle_plugins">Gradle section</a>. Unfortunately, it&rsquo;s one of the sections that has nothing but a &ldquo;TODO.&rdquo;</p>
+
+<p>There is another section of the manual dedicated to <a href="http://www.ratpack.io/manual/current/gradle.html#building_with_gradle">building with Gradle</a>, so I&rsquo;m not really sure what the maintainers are planning to add to the Setup > Gradle section. Regardless, I was able to find what I was looking for in this section and it was trivial to create a Gradle build file that would run my (not yet created) Ratpack application.</p>
+
+<h3>Coding</h3>
+
+<p>One of my favorite things about Groovy is how easy an API can be to work with when using DSLs. Ratpack is no exception: all of your endpoints are configured via the handlers DSL. Here&rsquo;s an example of an application with two endpoints: <code>/hello</code> and <code>/goodbye</code>.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">ratpack</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">handlers</span> <span class="o">{</span>
+</span><span class='line'>      <span class="n">get</span><span class="o">(</span><span class="s2">&quot;hello&quot;</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>          <span class="n">render</span> <span class="s2">&quot;Hello, World!&quot;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="n">get</span><span class="o">(</span><span class="s2">&quot;goodbye&quot;</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>          <span class="n">render</span> <span class="s2">&quot;Goodbye, World!&quot;</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>It works exactly as you would expect it to &ndash; when navigating to example.com/hello, &ldquo;Hello, World!&rdquo; is sent to the browser. And, of course, navigating to example.com/goodbye results in &ldquo;Goodbye, World!&rdquo;</p>
+
+<p>Later this week, I&rsquo;ll be writing another post that looks at the code behind a Ratpack application more in depth. For now, I&rsquo;ll just say that I found Ratpack&rsquo;s DSL very intuitive and I enjoyed writing code with it.</p>
+
+<h3>Community</h3>
+
+<p>This is a short bullet point, but I just wanted to point out that there is a <a href="http://forum.ratpack.io/">forum</a> for discussing Ratpack. The forum seems fairly active and I was able to find some very helpful information there.</p>
+
+<h3>Final Thoughts</h3>
+
+<p>I found Ratpack to be an enjoyable framework to work with. If you don&rsquo;t mind referencing a few different sources of documentation (and probably a bit of trial and error), I would highly recommend checking it out.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Sean Walsh</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-08-26T17:21:28-07:00" pubdate data-updated="true">Aug 26<span>th</span>, 2014</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/07/17/running-the-groovy-console-from-gradle/" title="Previous Post: Running the Groovy Console from Gradle">&laquo; Running the Groovy Console from Gradle</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+<!-- 
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/08/26/ratpack-first-impressions/">Ratpack: First Impressions</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/07/17/running-the-groovy-console-from-gradle/">Running the Groovy Console From Gradle</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/07/01/quick-tip-angular-debugging/">Quick Tip: Angular Debugging</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/06/25/groovy-browser-automation-with-geb/">Groovy Browser Automation With Geb</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/06/14/changes/">Changes!</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/s992">@s992</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 's992',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+ -->
+
+    </div>
+  </div>
+  <!-- <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Sean Walsh -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+
+
+</footer> -->
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'swalsh';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://swalsh.org/blog/2014/08/26/ratpack-first-impressions/';
+        var disqus_url = 'http://swalsh.org/blog/2014/08/26/ratpack-first-impressions/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+  
+  <aside class="sidebar">
+    
+      <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/08/26/ratpack-first-impressions/">Ratpack: First Impressions</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/07/17/running-the-groovy-console-from-gradle/">Running the Groovy Console From Gradle</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/07/01/quick-tip-angular-debugging/">Quick Tip: Angular Debugging</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/06/25/groovy-browser-automation-with-geb/">Groovy Browser Automation With Geb</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/06/14/changes/">Changes!</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/s992">@s992</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 's992',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+    
+  </aside>
+  
+</body>
+
+
+</html>
