@@ -4,7 +4,7 @@
   <title><![CDATA[Sean Walsh]]></title>
   <link href="http://swalsh.org/atom.xml" rel="self"/>
   <link href="http://swalsh.org/"/>
-  <updated>2014-08-26T18:39:51-07:00</updated>
+  <updated>2014-08-27T17:52:52-07:00</updated>
   <id>http://swalsh.org/</id>
   <author>
     <name><![CDATA[Sean Walsh]]></name>
@@ -37,9 +37,11 @@
 
 <p>After I&rsquo;m done scanning the documentation, I like to check out examples of the codebase. There&rsquo;s no shortage of example Ratpack applications: you can find five examples <a href="https://github.com/ratpack">here</a>, three of which are Groovy based &ndash; example-books, example-ratpack-gradle-groovy-app, and example-ratpack-standalone-groovy-script.</p>
 
-<p>I was working with Gradle, so I checked out example-ratpack-gradle-groovy-app first. Unfortunately, it hasn&rsquo;t been touched in eight months and seems to have stopped working. I was unable to build it, so I moved on to example-books, which is also Gradle based. This one ran, and I was able to poke around a little bit and get a feel for it.</p>
+<p>I was working with Gradle, so I checked out example-ratpack-gradle-groovy-app first. Unfortunately, it hasn&rsquo;t been touched in eight months and seems to have stopped working (<em>this was corrected, see my update below</em>). I was unable to build it, so I moved on to example-books, which is also Gradle based. This one ran, and I was able to poke around a little bit and get a feel for it.</p>
 
 <p>I should note that at this time I didn&rsquo;t really have a strong understanding of how a Ratpack application is structured. There&rsquo;s a lot of stuff going on in example-books, and most of it went right over my head. I ultimately ended up cutting down example-books to create a completely barebones Ratpack example that doesn&rsquo;t really do anything, but writing it helped me get a better grasp on what exactly was necessary to get a Ratpack application started. You can find that example <a href="https://github.com/ratpack/example-books.git">here</a>.</p>
+
+<p><em>Update 8/27/2014</em>: Shortly after this post made its rounds on Twitter, <a href="https://github.com/rhart">Rus Hart</a> updated example-ratpack-gradle-groovy-app (<a href="https://github.com/ratpack/example-ratpack-gradle-groovy-app/commit/3e4c70056e14af8ddee061bc6a4946d5a486926b#diff-d41d8cd98f00b204e9800998ecf8427e">commit here</a>) to make it run on version 0.9.7 of Ratpack. It works great now, and I think that it&rsquo;s a better starting point than example-books. If you&rsquo;re looking specifically for a CRUD example, you should still check out example-books, but example-ratpack-gradle-groovy-app is much easier to follow if you&rsquo;re just looking to get an intro to Ratpack.</p>
 
 <h3>Setup</h3>
 
