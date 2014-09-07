@@ -4,7 +4,7 @@
   <title><![CDATA[Sean Walsh]]></title>
   <link href="http://swalsh.org/atom.xml" rel="self"/>
   <link href="http://swalsh.org/"/>
-  <updated>2014-09-07T15:12:44-07:00</updated>
+  <updated>2014-09-07T15:26:47-07:00</updated>
   <id>http://swalsh.org/</id>
   <author>
     <name><![CDATA[Sean Walsh]]></name>
@@ -12,6 +12,15 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Migrating Octopress to a New Computer]]></title>
+    <link href="http://swalsh.org/blog/2014/09/07/migrating-octopress-to-a-new-computer/"/>
+    <updated>2014-09-07T15:16:57-07:00</updated>
+    <id>http://swalsh.org/blog/2014/09/07/migrating-octopress-to-a-new-computer</id>
+    <content type="html"><![CDATA[<p>Yesterday, I decided to pull the trigger on updating to Windows 8.1. It went smoothly, but I couldn&rsquo;t seem to get Octopress working for me. Luckily, Daniel Auger <a href="http://nerditorium.danielauger.com/blog/2013/06/22/setting-up-an-existing-octopress-blog-on-a-new-computer/">posted</a> a quick snippet (originally posted by <a href="https://twitter.com/dblockdotorg">@dlobckdotorg</a>) on how to get back up and running. If you&rsquo;re moving Octopress to a new computer, make sure you save that post! Just in case either of their sites go away, I&rsquo;ve reproduced it as a Gist here: <a href="https://gist.github.com/s992/23d35ebad8e8988c02c5">https://gist.github.com/s992/23d35ebad8e8988c02c5</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Ratpack: First Impressions]]></title>
