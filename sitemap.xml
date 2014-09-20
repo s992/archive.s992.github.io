@@ -45,24 +45,36 @@
         <lastmod>2014-09-07T15:26:01-07:00</lastmod>
     </url>
     <url>
+        <loc>
+            http://swalsh.org/blog/2014/09/16/file-uploads-with-angularjs-and-ratpack-part-1/
+        </loc>
+        <lastmod>2014-09-20T09:03:33-07:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://swalsh.org/blog/2014/09/17/file-uploads-with-angularjs-and-ratpack-part-2/
+        </loc>
+        <lastmod>2014-09-20T09:52:05-07:00</lastmod>
+    </url>
+    <url>
         <loc>http://swalsh.org/about/</loc>
         <lastmod>2014-09-07T15:11:32-07:00</lastmod>
     </url>
     <url>
         <loc>http://swalsh.org/archives/</loc>
-        <lastmod>2014-09-07T15:26:01-07:00</lastmod>
+        <lastmod>2014-09-20T09:52:05-07:00</lastmod>
     </url>
     <url>
         <loc>http://swalsh.org/blog/archives/</loc>
-        <lastmod>2014-09-07T15:26:01-07:00</lastmod>
+        <lastmod>2014-09-20T09:52:05-07:00</lastmod>
     </url>
     <url>
         <loc>http://swalsh.org/blog/</loc>
-        <lastmod>2014-09-07T15:26:01-07:00</lastmod>
+        <lastmod>2014-09-20T09:52:05-07:00</lastmod>
     </url>
     <url>
         <loc>http://swalsh.org/</loc>
-        <lastmod>2014-09-07T15:26:01-07:00</lastmod>
+        <lastmod>2014-09-20T09:52:05-07:00</lastmod>
     </url>
     <url>
         <loc>http://swalsh.org/robots.txt</loc>

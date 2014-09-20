@@ -1,0 +1,847 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>File Uploads With AngularJS and Ratpack: Part 2 - Sean Walsh</title>
+  <meta name="author" content="Sean Walsh">
+
+  
+  <meta name="description" content="This is a continuation of this post, where I described the Ratpack back end for our file upload application. If you&rsquo;re only interested in the &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://swalsh.org/blog/2014/09/17/file-uploads-with-angularjs-and-ratpack-part-2">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Sean Walsh" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-52344422-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body    class="collapse-sidebar sidebar-footer" >
+  <nav role="navigation">
+
+<ul class="main-navigation">
+  <li><a href="/">Home</a></li>
+  <li><a href="/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <!-- <header role="banner"><div class='hero'>
+	<div class='wrap'>
+	  <h1><a href="/">Sean Walsh</a></h1>
+	  
+	</div>
+</div>
+
+</header> -->
+  
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">File Uploads With AngularJS and Ratpack: Part 2</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-09-17T21:25:18-07:00" pubdate data-updated="true">Sep 17<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>This is a continuation of <a href="/blog/2014/09/16/file-uploads-with-angularjs-and-ratpack-part-1">this post</a>, where I described the Ratpack back end for our file upload application. If you&rsquo;re only interested in the Angular stuff, please keep reading, but otherwise I&rsquo;d recommend you take a look at part 1 of the series.</p>
+
+<!-- more -->
+
+
+<p>Before I begin, I just want to offer a big thank you to Jenny Louthan, whose <a href="http://uncorkedstudios.com/blog/multipartformdata-file-upload-with-angularjs">blog post</a> is where I learned how to do file uploads with Angular. Both the directive and file upload service method described in this article are <em>very</em> slightly modified versions of the ones in her blog post.</p>
+
+<h2>The Application</h2>
+
+<p>Here&rsquo;s a quick recap for those of you who chose to skip part 1:</p>
+
+<p>The end result of this series is a simple image upload application. The Angular powered front-end will send images to Ratpack, where they&rsquo;ll be written to disk along with thumbnails. The full project code can be found <a href="https://github.com/s992/angular-ratpack-upload">here</a>. This is what the final application will look like:</p>
+
+<p><img src="/images/angular-ratpack-upload/scrn1.png"></p>
+
+<p>It&rsquo;s not pretty, but if you&rsquo;re looking for an article on design, you&rsquo;ve come to the wrong place! :)</p>
+
+<h2>AngularJS</h2>
+
+<p>Our Angular app will be extremely simple by Angular standards &ndash; just a single view and nothing too fancy happening outside of the file upload stuff. One important thing to note is that we&rsquo;ll be using the <a href="https://developer.mozilla.org/en-US/docs/Web/API/FormData">FormData</a> object, which only has IE support in IE10+. It works fine in Chrome and Firefox. If you need support for an earlier IE version, there are a number of directives that make use of a hidden iframe to support file uploads.</p>
+
+<h3>Project Structure</h3>
+
+<p>The application will live inside of the assets folder we declared in part one of this series: <code>/src/ratpack/public</code>. I&rsquo;ve broken the Angular code up so that we have a single file for each controller, service, and directive we&rsquo;ll be using. This is my standard project structure, but it certainly isn&rsquo;t the only way and probably isn&rsquo;t even the &ldquo;right&rdquo; way.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/src/ratpack/public/js/app.js
+</span><span class='line'>/src/ratpack/public/js/controllers/upload.js
+</span><span class='line'>/src/ratpack/public/js/directives/fileModel.js
+</span><span class='line'>/src/ratpack/public/js/services/imageService.js
+</span><span class='line'>
+</span><span class='line'>/src/ratpack/public/index.html</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>index.html</h3>
+
+<p>The first thing we need to do with this application is add the <code>ng-app</code> and <code>ng-controller</code> directives to the HTML. In an application with multiple views, you&rsquo;d likely use <code>$routeProvider</code> to configure your controller, but that&rsquo;s not necessary here.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="cp">&lt;!DOCTYPE html&gt;</span>
+</span><span class='line'><span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">&quot;en&quot;</span> <span class="na">ng-app=</span><span class="s">&quot;uploader&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'><span class="nt">&lt;head&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;title&gt;</span>AngularJS File Upload with Ratpack<span class="nt">&lt;/title&gt;</span>
+</span><span class='line'><span class="nt">&lt;/head&gt;</span>
+</span><span class='line'><span class="nt">&lt;body</span> <span class="na">ng-controller=</span><span class="s">&quot;UploadCtrl&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  
+</span><span class='line'>  <span class="nt">&lt;h1&gt;</span>File Uploader<span class="nt">&lt;/h1&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;/body&gt;</span>
+</span><span class='line'><span class="nt">&lt;/html&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Within our page, we need three things: a container for possible errors, the upload form itself, and the image grid. The error container is quick and easy &ndash; just a div that we&rsquo;ll display if <code>$scope.error</code> contains a message for us.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;error.length&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;p&gt;</span>{{ error }}<span class="nt">&lt;/p&gt;</span>
+</span><span class='line'><span class="nt">&lt;/div&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Following that is the upload form. We use the <code>ng-disabled</code> attribute to disable both the input and the submit button while we&rsquo;re waiting for a response from the back end. In this case, we just use a boolean value sitting on $scope that we&rsquo;ll toggle within the controller. We&rsquo;ll use that same flag to indicate that something is happening by setting the button text to either &ldquo;Upload!&rdquo; or &ldquo;Uploading..&rdquo; depending on whether we have an open request or not. Finally, we have a container that will be populated with a message when the upload has completed successfuly.</p>
+
+<p>Make a mental note of the <code>file-model</code> attribute on the file input &ndash; we&rsquo;ll discuss that in the directives section.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;form&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;file&quot;</span> <span class="na">file-model=</span><span class="s">&quot;fileToUpload&quot;</span> <span class="na">ng-disabled=</span><span class="s">&quot;uploading&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;button</span> <span class="na">type=</span><span class="s">&quot;button&quot;</span> <span class="na">ng-click=</span><span class="s">&quot;uploadFile()&quot;</span> <span class="na">ng-disabled=</span><span class="s">&quot;uploading&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;span</span> <span class="na">ng-show=</span><span class="s">&quot;!uploading&quot;</span><span class="nt">&gt;</span>Upload!<span class="nt">&lt;/span&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;span</span> <span class="na">ng-show=</span><span class="s">&quot;uploading&quot;</span><span class="nt">&gt;</span>Uploading..<span class="nt">&lt;/span&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/button&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;span</span> <span class="na">ng-show=</span><span class="s">&quot;flash.length&quot;</span><span class="nt">&gt;</span>{{ flash }}<span class="nt">&lt;/span&gt;</span>
+</span><span class='line'><span class="nt">&lt;/form&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Our image grid is comprised of image tags wrapped in anchor tags. Here, we&rsquo;re using <code>ng-repeat</code> to iterate over the list of image file names we received from the back end. Using the file names and the image path (which we also received from the back end), we build up a collection of thumbnails that link to the full size image.</p>
+
+<p>There&rsquo;s one thing to point out here: when using a dynamic image source, you want to use the ng-src attribute rather than the standard src attribute. With a standard src attribute, the browser will make two HTTP requests. The first will come on initial page load and you will see a 404 because it&rsquo;s requesting the literal <code>{{ imagePath }}/thumb/{{ image }}</code>. The second will come once Angular has populated the HTML with the values of imagePath and image and then we&rsquo;ll get the actual image we need. By using ng-src, we won&rsquo;t see a request until Angular has resolved both imagePath and image.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;h1&gt;</span>{{ images.length }} Uploaded Images<span class="nt">&lt;/h1&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;images&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;a</span> <span class="na">ng-repeat=</span><span class="s">&quot;image in images&quot;</span> <span class="na">href=</span><span class="s">&quot;{{ imagePath }}/{{ image }}&quot;</span> <span class="na">target=</span><span class="s">&quot;_blank&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;img</span> <span class="na">ng-src=</span><span class="s">&quot;{{ imagePath }}/thumb/{{ image }}&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/a&gt;</span>
+</span><span class='line'><span class="nt">&lt;/div&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Finally, let&rsquo;s make sure we include our JS files:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;//ajax.googleapis.com/ajax/libs/angularjs/1.2.23/angular.min.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+</span><span class='line'><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;js/app.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+</span><span class='line'><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;js/controllers/upload.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+</span><span class='line'><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;js/services/imageService.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+</span><span class='line'><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;js/directives/fileModel.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>app.js</h3>
+
+<p>This one is short and sweet. We&rsquo;ll just initialize the application (uploader) with its dependencies(uploader.controllers, uploader.directives, and uploader.services). I&rsquo;m also going to initialize each of the dependencies here so that they are easy to reference down the road.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="nx">angular</span><span class="p">.</span><span class="nx">module</span><span class="p">(</span> <span class="s2">&quot;uploader&quot;</span><span class="p">,</span> <span class="p">[</span>
+</span><span class='line'>  <span class="s2">&quot;uploader.controllers&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="s2">&quot;uploader.directives&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="s2">&quot;uploader.services&quot;</span>
+</span><span class='line'><span class="p">]);</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">angular</span><span class="p">.</span><span class="nx">module</span><span class="p">(</span> <span class="s2">&quot;uploader.controllers&quot;</span><span class="p">,</span> <span class="p">[]</span> <span class="p">);</span>
+</span><span class='line'><span class="nx">angular</span><span class="p">.</span><span class="nx">module</span><span class="p">(</span> <span class="s2">&quot;uploader.directives&quot;</span><span class="p">,</span> <span class="p">[]</span> <span class="p">);</span>
+</span><span class='line'><span class="nx">angular</span><span class="p">.</span><span class="nx">module</span><span class="p">(</span> <span class="s2">&quot;uploader.services&quot;</span><span class="p">,</span> <span class="p">[]</span> <span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>UploadCtrl</h3>
+
+<p>We&rsquo;re using a single controller, UploadCtrl. We&rsquo;ll start off by defining the controller and its dependencies. The dependencies are defined both as annotations &ndash; <code>[ "$scope", "$timeout", "imageService" ]</code> &ndash; and as arguments to the controller method.</p>
+
+<p>The annotations are a necessity for Angular code that will be minified because Angular uses them to determine (and then inject) our controller&rsquo;s dependencies. Without the annotations, Angular infers the dependencies from the method&rsquo;s argument names, which will almost certainly be renamed during minification.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="nx">angular</span><span class="p">.</span><span class="nx">module</span><span class="p">(</span> <span class="s2">&quot;uploader.controllers&quot;</span> <span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">.</span><span class="nx">controller</span><span class="p">(</span> <span class="s2">&quot;UploadCtrl&quot;</span><span class="p">,</span> <span class="p">[</span> <span class="s2">&quot;$scope&quot;</span><span class="p">,</span> <span class="s2">&quot;$timeout&quot;</span><span class="p">,</span> <span class="s2">&quot;imageService&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="kd">function</span><span class="p">(</span> <span class="nx">$scope</span><span class="p">,</span> <span class="nx">$timeout</span><span class="p">,</span> <span class="nx">imageService</span> <span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="c1">// do controller stuff here</span>
+</span><span class='line'><span class="p">}])</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Although Angular is generally pretty forgiving when it comes to undefined variables, I prefer to initialize my $scope variables right away.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="nx">$scope</span><span class="p">.</span><span class="nx">images</span> <span class="o">=</span> <span class="p">[];</span>
+</span><span class='line'><span class="nx">$scope</span><span class="p">.</span><span class="nx">error</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="nx">$scope</span><span class="p">.</span><span class="nx">flash</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="nx">$scope</span><span class="p">.</span><span class="nx">uploading</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Next up, we have a handful of private (that is, var scoped and not accessible to the view) convenience methods that are used to manage the display of dynamic messages. This could certainly be done better, but it works for our purposes.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="kd">var</span> <span class="nx">setError</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">error</span> <span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">$scope</span><span class="p">.</span><span class="nx">error</span> <span class="o">=</span> <span class="nx">error</span> <span class="o">||</span> <span class="s2">&quot;&quot;</span><span class="p">;</span>
+</span><span class='line'>  <span class="nx">$scope</span><span class="p">.</span><span class="nx">uploading</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+</span><span class='line'><span class="p">};</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">clearError</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">setError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="p">};</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">var</span> <span class="nx">flashMessage</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">message</span><span class="p">,</span> <span class="nx">duration</span> <span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nx">$scope</span><span class="p">.</span><span class="nx">flash</span> <span class="o">=</span> <span class="nx">message</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nx">$timeout</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>      <span class="nx">$scope</span><span class="p">.</span><span class="nx">flash</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">;</span>
+</span><span class='line'>  <span class="p">},</span> <span class="nx">duration</span> <span class="o">||</span> <span class="mi">3000</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">};</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now that our setup and private methods are out of the way, let&rsquo;s take a look at the first real action the controller will perform: requesting a list of images from the back end.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="nx">imageService</span><span class="p">.</span><span class="nx">getImages</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span>
+</span><span class='line'>  <span class="kd">function</span><span class="p">(</span> <span class="nx">data</span> <span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="nx">$scope</span><span class="p">.</span><span class="nx">imagePath</span> <span class="o">=</span> <span class="nx">data</span><span class="p">.</span><span class="nx">imagePath</span><span class="p">;</span>
+</span><span class='line'>      <span class="nx">$scope</span><span class="p">.</span><span class="nx">images</span> <span class="o">=</span> <span class="nx">data</span><span class="p">.</span><span class="nx">images</span><span class="p">;</span>
+</span><span class='line'>  <span class="p">},</span>
+</span><span class='line'>  <span class="nx">setError</span>
+</span><span class='line'><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>imageService.getImages()</code> returns a promise provided by <a href="https://docs.angularjs.org/api/ng/service/$q">$q</a>. Once the promise has resolved, the first callback to the <code>then()</code> method will be executed. If the promise is rejected, which will happen if we receive an error from the back end, the second callback (<code>setError</code>) will be executed.</p>
+
+<p>In our success callback, we&rsquo;re just taking the response from the back end and sticking it into $scope. If we currently have images in the image directory, our image grid will be populated.</p>
+
+<p>Our failure callback simply passes the entirety of the error message to <code>setError()</code>, which ultimately results in the error being dumped out on the screen. This is not optimal because an unexpected exception will cause Ratpack to respond with an HTML error page, the source of which will get dumped into our error div. Not a good solution, but sufficient for our purposes &ndash; it&rsquo;s not like this thing is going into a production environment anyway (famous last words)!</p>
+
+<p>Finally, we have the method that handles sending the file to imageService and ultimately to the server. This method will be called via ng-click when the user clicks on the &ldquo;Upload!&rdquo; button.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="nx">$scope</span><span class="p">.</span><span class="nx">uploadFile</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nx">clearError</span><span class="p">();</span>
+</span><span class='line'>  <span class="nx">$scope</span><span class="p">.</span><span class="nx">uploading</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nx">imageService</span><span class="p">.</span><span class="nx">uploadImage</span><span class="p">(</span> <span class="nx">$scope</span><span class="p">.</span><span class="nx">fileToUpload</span> <span class="p">).</span><span class="nx">then</span><span class="p">(</span>
+</span><span class='line'>      <span class="kd">function</span><span class="p">(</span> <span class="nx">data</span> <span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>          <span class="nx">$scope</span><span class="p">.</span><span class="nx">images</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span> <span class="nx">data</span><span class="p">.</span><span class="nx">fileName</span> <span class="p">);</span>
+</span><span class='line'>          <span class="nx">$scope</span><span class="p">.</span><span class="nx">uploading</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+</span><span class='line'>          <span class="nx">flashMessage</span><span class="p">(</span> <span class="s2">&quot;Success!&quot;</span> <span class="p">);</span>
+</span><span class='line'>      <span class="p">},</span>
+</span><span class='line'>      <span class="nx">setError</span>
+</span><span class='line'>  <span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">};</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The first order of business in this method is to clear any existing error messages from the screen. If the user previously attempted to upload a PDF and is looking at an error message, we want to wipe it out while they are waiting for their valid (we hope) file to upload. Next, we&rsquo;ll set the uploading flag &ndash; this is what&rsquo;s used to trigger some disabled attributes on the form inputs as well as to change the button text to indicate that the upload is in progress.</p>
+
+<p>Just like <code>imageService.getImages()</code>, <code>imageService.uploadImage()</code> returns a promise. When it resolves, we&rsquo;ll push the new file name onto the images array, set the uploading flag to false, and then use our <code>flashMessage()</code> method to briefly display the text, &ldquo;Success!&rdquo; Again, if it fails we are just passing the entirety of the error string (whatever that might be) along to <code>setError()</code>.</p>
+
+<p>We&rsquo;re passing a single argument to <code>imageService.uploadImage()</code> &ndash; <code>$scope.fileToUpload</code>. This variable is populated by the fileModel directive, which we&rsquo;ll discuss in the fileModel section.</p>
+
+<h3>imageService</h3>
+
+<p>Our imageService exposes two public methods: <code>getImages()</code> and <code>uploadImage( image )</code>. In addition to the public methods, there is a single private method, <code>promise( callback )</code>, that allows us to avoid duplicating a very small amount of code by creating a deferred, invoking the callback, and returning a promise. You&rsquo;ll notice that we use the same dependency annotation here that was used on our controller.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="nx">angular</span><span class="p">.</span><span class="nx">module</span><span class="p">(</span> <span class="s2">&quot;uploader.services&quot;</span> <span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">.</span><span class="nx">service</span><span class="p">(</span> <span class="s2">&quot;imageService&quot;</span><span class="p">,</span> <span class="p">[</span> <span class="s2">&quot;$q&quot;</span><span class="p">,</span> <span class="s2">&quot;$http&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">$q</span><span class="p">,</span> <span class="nx">$http</span> <span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kd">var</span> <span class="nx">promise</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">callback</span> <span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="kd">var</span> <span class="nx">deferred</span> <span class="o">=</span> <span class="nx">$q</span><span class="p">.</span><span class="nx">defer</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="nx">callback</span><span class="p">(</span> <span class="nx">deferred</span> <span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="k">return</span> <span class="nx">deferred</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="p">};</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">return</span> <span class="p">{</span>
+</span><span class='line'>      <span class="nx">getImages</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>          <span class="c1">// retrieves images</span>
+</span><span class='line'>      <span class="p">},</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="nx">uploadImage</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">image</span> <span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>          <span class="c1">// sends an image</span>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>  <span class="p">};</span>
+</span><span class='line'><span class="p">}]);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Both of our public methods utilize the <code>promise</code> method. The first, <code>getImages()</code>, is straightforward &ndash; we simply make an HTTP request to &ldquo;image&rdquo;, our Ratpack endpoint at <a href="http://localhost:5050">http://localhost:5050</a> that returns a list of images, and then either resolve or reject the promise based on the result of that request.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="nx">getImages</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">return</span> <span class="nx">promise</span><span class="p">(</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">deferred</span> <span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="nx">$http</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span> <span class="s2">&quot;image&quot;</span> <span class="p">)</span>
+</span><span class='line'>          <span class="p">.</span><span class="nx">success</span><span class="p">(</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">data</span> <span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>              <span class="nx">deferred</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span> <span class="nx">data</span> <span class="p">);</span>
+</span><span class='line'>          <span class="p">})</span>
+</span><span class='line'>          <span class="p">.</span><span class="nx">error</span><span class="p">(</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">error</span> <span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>              <span class="nx">deferred</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span> <span class="nx">error</span> <span class="p">);</span>
+</span><span class='line'>          <span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="p">});</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The second, <code>uploadImage()</code>, makes use of the JavaScript <a href="https://developer.mozilla.org/en-US/docs/Web/API/FormData">FormData</a> object. FormData is the object that makes it possible for us to upload files directly via AJAX. The interface is simple enough: by calling FormData&rsquo;s <code>append()</code> method, we can attach key value pairs to the object and send them in the same format as a standard (non-AJAX) POST request.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="nx">uploadImage</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">image</span> <span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">return</span> <span class="nx">promise</span><span class="p">(</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">deferred</span> <span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="kd">var</span> <span class="nx">formData</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">FormData</span><span class="p">();</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="nx">formData</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span> <span class="s2">&quot;fileUpload&quot;</span><span class="p">,</span> <span class="nx">image</span> <span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="nx">$http</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span> <span class="s2">&quot;image/upload&quot;</span><span class="p">,</span> <span class="nx">formData</span><span class="p">,</span> <span class="p">{</span>
+</span><span class='line'>          <span class="nx">transformRequest</span><span class="o">:</span> <span class="nx">angular</span><span class="p">.</span><span class="nx">identity</span><span class="p">,</span>
+</span><span class='line'>          <span class="nx">headers</span><span class="o">:</span> <span class="p">{</span> <span class="s2">&quot;Content-Type&quot;</span><span class="o">:</span> <span class="kc">undefined</span> <span class="p">}</span>
+</span><span class='line'>      <span class="p">}).</span><span class="nx">success</span><span class="p">(</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">data</span> <span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>          <span class="nx">deferred</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span> <span class="nx">data</span> <span class="p">);</span>
+</span><span class='line'>      <span class="p">}).</span><span class="nx">error</span><span class="p">(</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">error</span> <span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>          <span class="nx">deferred</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span> <span class="nx">error</span> <span class="p">);</span>
+</span><span class='line'>      <span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="p">});</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Once again, we&rsquo;re performing an HTTP request and resolving the promise with a successful result or rejecting it when it is unsuccessful. In this case, however, we&rsquo;re passing two additional arguments to the request method (<code>$http.post()</code>): formData, which we know is the form we want to send to the server, and a configuration object, which is needed to make sure Angular doesn&rsquo;t screw up our request.</p>
+
+<p>We have to set two parameters to prevent Angular from getting in our way: <code>transformRequest</code> and <code>headers</code> (specifically, Content-Type). When Angular sends a POST request, it assumes the data we are POSTing is JSON. The default action of the transformRequest method is to convert the data to a JSON string. So, how do we override that? We could define transformRequest as an anonymous function that simply doesn&rsquo;t do anything other than send the data right back, but that&rsquo;s not necessary because Angular provides us with the <a href="https://docs.angularjs.org/api/ng/function/angular.identity">identity</a> method, which simply returns its first argument.</p>
+
+<p>Content-Type needs to be set to <code>undefined</code>, <em>not</em> &ldquo;multipart/form-data.&rdquo; If we set the content type to &ldquo;multipart/form-data&rdquo;, the POSTed data will not have the correct boundaries and our request will fail. If we set it to <code>undefined</code>, the browser will fill in both the correct content type and the boundaries we need. I&rsquo;ve seen reports of people using <code>false</code> instead of <code>undefined</code>, but I was unable to get that to work.</p>
+
+<h3>fileModel</h3>
+
+<p>This directive is where the magic happens. Angular does not currently support binding to a file input, but the fileModel directive makes that possible. For a quick refresher of how we&rsquo;re using the directive, you can see the <code>file-model</code> attribute on the file input, which is what tells Angular to load up the directive and bind it to our DOM element.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;file&quot;</span> <span class="na">file-model=</span><span class="s">&quot;fileToUpload&quot;</span> <span class="na">ng-disabled=</span><span class="s">&quot;uploading&quot;</span><span class="nt">&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If you&rsquo;re not familiar with Angular directives, the gist of what you need to know is that the directive&rsquo;s link function is called once the element is ready to have its DOM manipulated or events bound to it. The link function receives three arguments: the scope that the element is bound to, the element itself, and the element&rsquo;s attributes. Attribute names with a dash (such as &ldquo;file-upload&rdquo;) will be converted to camelcase.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="nx">angular</span><span class="p">.</span><span class="nx">module</span><span class="p">(</span> <span class="s2">&quot;uploader.directives&quot;</span> <span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">.</span><span class="nx">directive</span><span class="p">(</span> <span class="s2">&quot;fileModel&quot;</span><span class="p">,</span> <span class="p">[</span> <span class="s2">&quot;$parse&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">$parse</span> <span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>  <span class="k">return</span> <span class="p">{</span>
+</span><span class='line'>      <span class="nx">restrict</span><span class="o">:</span> <span class="s2">&quot;A&quot;</span><span class="p">,</span>
+</span><span class='line'>      <span class="nx">link</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span> <span class="nx">scope</span><span class="p">,</span> <span class="nx">element</span><span class="p">,</span> <span class="nx">attrs</span> <span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>          <span class="kd">var</span> <span class="nx">model</span> <span class="o">=</span> <span class="nx">$parse</span><span class="p">(</span> <span class="nx">attrs</span><span class="p">.</span><span class="nx">fileModel</span> <span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>          <span class="nx">element</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span> <span class="s2">&quot;change&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>              <span class="nx">scope</span><span class="p">.</span><span class="nx">$apply</span><span class="p">(</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>                  <span class="nx">model</span><span class="p">.</span><span class="nx">assign</span><span class="p">(</span> <span class="nx">scope</span><span class="p">,</span> <span class="nx">element</span><span class="p">[</span> <span class="mi">0</span> <span class="p">].</span><span class="nx">files</span><span class="p">[</span> <span class="mi">0</span> <span class="p">]</span> <span class="p">);</span>
+</span><span class='line'>              <span class="p">});</span>
+</span><span class='line'>          <span class="p">});</span>
+</span><span class='line'>
+</span><span class='line'>      <span class="p">}</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}]);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The first thing we need to do in the link function is to get a reference to our model which, in this case, is represented by the value of the <code>file-model</code> attribute on the input element. By using the <a href="https://docs.angularjs.org/api/ng/service/$parse">$parse</a> service, we&rsquo;re making sure we can support dot paths. For example, if the file-model attribute was &ldquo;files.images.image1,&rdquo; <code>$parse</code> will evaluate that as an expression and return the correct variable.</p>
+
+<p>Once we have the model, we bind a change listener on our file input &ndash; standard jQuery stuff. When the change event is triggered, we update the model using <code>model.assign</code> and passing in the context (scope). This basically equates to <code>scope[ attrs.fileModel ] = value</code>, but this syntax is necessary due to the way we&rsquo;re retrieving the model with <code>$parse</code>. <code>scope.$apply()</code> is vital here because our model change is happening outside of Angular&rsquo;s digest cycle (basically, the loop that keeps all of our models in sync) and <code>scope.$apply()</code> lets Angular know that it needs to include this change the next time it performs the cycle.</p>
+
+<h2>Run it!</h2>
+
+<p>Now that we&rsquo;ve completed both halves of the application, we&rsquo;re ready to run it. This is accomplished by using the command prompt or terminal to navigate to the application&rsquo;s root directory and executing <code>gradle run</code>. If everything works correctly, you&rsquo;ll eventually see something like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='js'><span class='line'><span class="o">:</span><span class="nx">compileJava</span> <span class="nx">UP</span><span class="o">-</span><span class="nx">TO</span><span class="o">-</span><span class="nx">DATE</span>
+</span><span class='line'><span class="o">:</span><span class="nx">compileGroovy</span> <span class="nx">UP</span><span class="o">-</span><span class="nx">TO</span><span class="o">-</span><span class="nx">DATE</span>
+</span><span class='line'><span class="o">:</span><span class="nx">processResources</span> <span class="nx">UP</span><span class="o">-</span><span class="nx">TO</span><span class="o">-</span><span class="nx">DATE</span>
+</span><span class='line'><span class="o">:</span><span class="nx">classes</span> <span class="nx">UP</span><span class="o">-</span><span class="nx">TO</span><span class="o">-</span><span class="nx">DATE</span>
+</span><span class='line'><span class="o">:</span><span class="nx">configureRun</span>
+</span><span class='line'><span class="o">:</span><span class="nx">prepareBaseDir</span> <span class="nx">UP</span><span class="o">-</span><span class="nx">TO</span><span class="o">-</span><span class="nx">DATE</span>
+</span><span class='line'><span class="o">:</span><span class="nx">run</span>
+</span><span class='line'><span class="p">[</span><span class="nx">main</span><span class="p">]</span> <span class="nx">INFO</span> <span class="nx">ratpack</span><span class="p">.</span><span class="nx">server</span><span class="p">.</span><span class="nx">internal</span><span class="p">.</span><span class="nx">NettyRatpackServer</span> <span class="o">-</span> <span class="nx">Ratpack</span> <span class="nx">started</span> <span class="k">for</span> <span class="nx">http</span><span class="o">:</span><span class="c1">//localhost:5050</span>
+</span><span class='line'><span class="o">&gt;</span> <span class="nx">Building</span> <span class="mi">85</span><span class="o">%</span> <span class="o">:</span><span class="nx">run</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Once it&rsquo;s up and running, we can point our browser to <a href="http://localhost:5050">http://localhost:5050</a> and start uploading images!</p>
+
+<h2>Conclusion</h2>
+
+<p>That wraps up part two of this two part series. You can find the full source of this project Github at <a href="https://github.com/s992/angular-ratpack-upload">https://github.com/s992/angular-ratpack-upload</a>. If I did my job right, you probably now know more than you ever cared to about file uploads. :)</p>
+
+<p>Thanks for reading!</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Sean Walsh</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-09-17T21:25:18-07:00" pubdate data-updated="true">Sep 17<span>th</span>, 2014</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/09/16/file-uploads-with-angularjs-and-ratpack-part-1/" title="Previous Post: File Uploads with AngularJS and Ratpack: Part 1">&laquo; File Uploads with AngularJS and Ratpack: Part 1</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+<!-- 
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/09/17/file-uploads-with-angularjs-and-ratpack-part-2/">File Uploads With AngularJS and Ratpack: Part 2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/16/file-uploads-with-angularjs-and-ratpack-part-1/">File Uploads With AngularJS and Ratpack: Part 1</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/07/migrating-octopress-to-a-new-computer/">Migrating Octopress to a New Computer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/08/26/ratpack-first-impressions/">Ratpack: First Impressions</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/07/17/running-the-groovy-console-from-gradle/">Running the Groovy Console From Gradle</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/s992">@s992</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 's992',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+ -->
+
+    </div>
+  </div>
+  <!-- <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Sean Walsh -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+
+
+</footer> -->
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'swalsh';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://swalsh.org/blog/2014/09/17/file-uploads-with-angularjs-and-ratpack-part-2/';
+        var disqus_url = 'http://swalsh.org/blog/2014/09/17/file-uploads-with-angularjs-and-ratpack-part-2/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+  
+  <aside class="sidebar">
+    
+      <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/09/17/file-uploads-with-angularjs-and-ratpack-part-2/">File Uploads With AngularJS and Ratpack: Part 2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/16/file-uploads-with-angularjs-and-ratpack-part-1/">File Uploads With AngularJS and Ratpack: Part 1</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/07/migrating-octopress-to-a-new-computer/">Migrating Octopress to a New Computer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/08/26/ratpack-first-impressions/">Ratpack: First Impressions</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/07/17/running-the-groovy-console-from-gradle/">Running the Groovy Console From Gradle</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/s992">@s992</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 's992',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+    
+  </aside>
+  
+</body>
+
+
+</html>

@@ -1,0 +1,793 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>File Uploads With AngularJS and Ratpack: Part 1 - Sean Walsh</title>
+  <meta name="author" content="Sean Walsh">
+
+  
+  <meta name="description" content="Before I start this blog post, I just want to give a shout out to the Ratpack forum and especially the users that contribute to the forum. When I &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://swalsh.org/blog/2014/09/16/file-uploads-with-angularjs-and-ratpack-part-1">
+  <link href="/favicon.ico" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Sean Walsh" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-52344422-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body    class="collapse-sidebar sidebar-footer" >
+  <nav role="navigation">
+
+<ul class="main-navigation">
+  <li><a href="/">Home</a></li>
+  <li><a href="/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <!-- <header role="banner"><div class='hero'>
+	<div class='wrap'>
+	  <h1><a href="/">Sean Walsh</a></h1>
+	  
+	</div>
+</div>
+
+</header> -->
+  
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">File Uploads With AngularJS and Ratpack: Part 1</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-09-16T18:22:39-07:00" pubdate data-updated="true">Sep 16<span>th</span>, 2014</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Before I start this blog post, I just want to give a shout out to the <a href="http://forum.ratpack.io/">Ratpack forum</a> and especially the users that contribute to the forum. When I finished my code for this post, I <a href="http://forum.ratpack.io/AngularJS-Ratpack-File-Upload-td655.html">posted</a> it to the forum in hopes of receiving some criticism so that I could tweak it before writing an article about. At most, I expected a comment or two along the lines of, &ldquo;Yah, XYZ is OK but you could maybe try it this way instead.&rdquo; In other words, helpful but not <em>too</em> helpful.</p>
+
+<p>The next day, <a href="https://twitter.com/ldaley">Luke Daley</a> had forked my project (his fork is <a href="https://github.com/alkemist/angular-ratpack-upload">here</a>) and made some major improvements. He was also available to answer a few questions I had about his changes. I already thanked him profusely on the forum, but I just wanted to offer my thanks again &ndash; it&rsquo;s communities like this that make me really enjoy working with new (to me) technology. So, without further ado, let&rsquo;s get into it..</p>
+
+<!-- more -->
+
+
+<p><em>This article is running a lot longer than I expected it to, so I&rsquo;m going to break it into two parts. The first (this one) will be about the Ratpack application and the second will describe the AngularJS side of things. You can find the Angular portion of this series <a href="/blog/2014/09/17/file-uploads-with-angularjs-and-ratpack-part-2">here</a>.</em></p>
+
+<h2>The Application</h2>
+
+<p>The end result of this series is a simple image upload application. The Angular powered front-end will send images to Ratpack, where they&rsquo;ll be written to disk along with thumbnails. The full project code can be found <a href="https://github.com/s992/angular-ratpack-upload">here</a>. This is what the final application will look like:</p>
+
+<p><img src="/images/angular-ratpack-upload/scrn1.png"></p>
+
+<p>It&rsquo;s not pretty, but if you&rsquo;re looking for an article on design, you&rsquo;ve come to the wrong place! :)</p>
+
+<h2>Ratpack</h2>
+
+<p>We&rsquo;ll start with the server side and move on to the Angular stuff once our API is ready to go. Our Ratpack app is going to be very simple: we&rsquo;ll serve up the Angular app via a simple <code>index.html</code> and provide two endpoints for Angular to interact with:</p>
+
+<ul>
+<li><code>GET /image</code> to retrieve a list of uploaded images</li>
+<li><code>POST /image/upload</code> to upload an image</li>
+</ul>
+
+
+<h3>Project Structure</h3>
+
+<p>Our project structure is standard for a Gradle Ratpack app. Within the <code>src</code> directory, we have two directories: <code>main</code> and <code>ratpack</code>. <code>main</code> has plenty of subdirectories, but only one actual file &ndash; our service for processing the uploaded images. In <code>ratpack/public</code>, we have everything we need for the Angular app. And finally, in the root of <code>ratpack</code>, we have our <code>Ratpack.groovy</code> and <code>ratpack.properties</code> files.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/src/main/groovy/org/swalsh/image/ImageService.groovy
+</span><span class='line'>
+</span><span class='line'>/src/ratpack/public/css
+</span><span class='line'>/src/ratpack/public/js
+</span><span class='line'>/src/ratpack/public/index.html
+</span><span class='line'>
+</span><span class='line'>/src/ratpack/Ratpack.groovy
+</span><span class='line'>/src/ratpack/ratpack.properties
+</span><span class='line'>
+</span><span class='line'>build.gradle</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>build.gradle</h3>
+
+<p>The <code>build.gradle</code> script is pretty standard in this project, so I&rsquo;m not going to go through it step by step. You can <a href="https://github.com/s992/angular-ratpack-upload/blob/master/build.gradle">click here</a> to view the file in its entirety.</p>
+
+<p>The only important dependencies that we&rsquo;re pulling in (aside from the standard Ratpack stuff) are Ratpack&rsquo;s Jackson module and the <a href="http://www.thebuzzmedia.com/software/imgscalr-java-image-scaling-library/">imgscalr</a> library. The former is used for working with JSON, while the latter will be used to create thumbnail versions of the uploaded images. These are included in the build script like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">dependencies</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">compile</span> <span class="n">ratpack</span><span class="o">.</span><span class="na">dependency</span><span class="o">(</span><span class="s2">&quot;jackson&quot;</span><span class="o">)</span>
+</span><span class='line'>  <span class="n">compile</span> <span class="s2">&quot;org.imgscalr:imgscalr-lib:4.2&quot;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>ratpack.properties</h3>
+
+<p>Just a one liner here:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">maxContentLength</span> <span class="o">=</span> <span class="mi">5000000</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>As far as I can tell, Netty&rsquo;s default maximum content length &ndash; that is, the amount of data we can send in a request &ndash; is 1,048,576 bytes. This would limit us to just about 1 MB file sizes for image uploads. By changing this setting, we&rsquo;re bumping the maximum content length to about 5 MB, allowing us to send some bigger photos along.</p>
+
+<h3>Ratpack.groovy</h3>
+
+<p>Finally, some actual code! We&rsquo;ll start off with some basic imports.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="kn">import</span> <span class="nn">org.swalsh.image.ImageService</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">ratpack.form.Form</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">ratpack.jackson.JacksonModule</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">import</span> <span class="nn">static</span> <span class="n">ratpack</span><span class="o">.</span><span class="na">groovy</span><span class="o">.</span><span class="na">Groovy</span><span class="o">.</span><span class="na">ratpack</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">static</span> <span class="n">ratpack</span><span class="o">.</span><span class="na">jackson</span><span class="o">.</span><span class="na">Jackson</span><span class="o">.</span><span class="na">json</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Here&rsquo;s the rundown on what each import is for:</p>
+
+<ul>
+<li>The ImageService class is used for both processing the uploaded images as well as providing a list of currently available images.</li>
+<li>Form is used by Ratpack to (you guessed it!) parse incoming form data.</li>
+<li>JacksonModule and Jackson.json will be used to render JSON for the client.</li>
+<li>Finally, ratpack.groovy.Groovy.ratpack is required for us to actually build the app.</li>
+</ul>
+
+
+<p>Next up, we have some variables that will be used throughout our handlers to tell ImageService where to put uploaded files and to tell Angular where it can find the files. I&rsquo;m not exactly excited about storing these config options here, but for the purposes of this project, it works.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="kt">def</span> <span class="n">assetsPath</span> <span class="o">=</span> <span class="s2">&quot;public&quot;</span>
+</span><span class='line'><span class="kt">def</span> <span class="n">imageDirName</span> <span class="o">=</span> <span class="s2">&quot;uploaded-files&quot;</span>
+</span><span class='line'><span class="kt">def</span> <span class="n">imagePath</span> <span class="o">=</span> <span class="s2">&quot;$assetsPath/$imageDirName&quot;</span>
+</span><span class='line'><span class="kt">def</span> <span class="n">thumbPath</span> <span class="o">=</span> <span class="s2">&quot;$imagePath/thumb&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>One important thing to note about these folder paths is that they are <em>relative to Ratpack.groovy</em>. Our full path to the uploaded-files directory is <code>/src/ratpack/public/uploaded-files</code>, but we only need to specify <code>/public/uploaded-files</code>.</p>
+
+<p>Now that the boring stuff is out of the way, we can move on to the fun stuff &ndash; Ratpack&rsquo;s Groovy DSL. Our app is kicked off via the <code>ratpack</code> method, with the app itself being defined within the closure:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">ratpack</span> <span class="o">{</span>
+</span><span class='line'>  <span class="c1">// stuff!</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Within the <code>ratpack</code> closure, we first need to tell Guice (the DI framework) about the modules and bindings we&rsquo;re going to be using. In this case, we only need to add one module. The ImageService class will also be managed by Guice, but it does not have its own module &ndash; that will be explained a little bit later in the article.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">bindings</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">add</span> <span class="k">new</span> <span class="nf">JacksonModule</span><span class="o">()</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>In addition to the module binding, we can include an <code>init</code> closure to execute action(s) once the injector has been finalized (<a href="http://forum.ratpack.io/What-does-init-do-in-modules-tp577p578.html">source</a>). Basically, the <code>init</code> block will only run a single time once the application has started. In this case, we&rsquo;re going to use it to create our upload directory if it doesn&rsquo;t already exist.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">bindings</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">add</span> <span class="k">new</span> <span class="nf">JacksonModule</span><span class="o">()</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">init</span> <span class="o">{</span>
+</span><span class='line'>      <span class="n">launchConfig</span><span class="o">.</span><span class="na">baseDir</span><span class="o">.</span><span class="na">file</span><span class="o">(</span> <span class="n">thumbPath</span> <span class="o">).</span><span class="na">toFile</span><span class="o">().</span><span class="na">mkdirs</span><span class="o">()</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><a href="http://www.ratpack.io/manual/current/api/ratpack/launch/LaunchConfig.html">LaunchConfig</a> has a lot of useful information about our application, and here we&rsquo;re using it to grab the base directory.</p>
+
+<p>Ratpack&rsquo;s <code>handlers</code> closure allows us to quickly and concisely define our available endpoints. We&rsquo;ll scaffold out our application like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">handlers</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">assets</span> <span class="n">assetsPath</span><span class="o">,</span> <span class="s2">&quot;index.html&quot;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">prefix</span><span class="o">(</span><span class="s2">&quot;image&quot;</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>      <span class="n">get</span> <span class="o">{</span>
+</span><span class='line'>          <span class="c1">// do stuff!</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>      <span class="n">post</span><span class="o">(</span><span class="s2">&quot;upload&quot;</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>          <span class="c1">// do other stuff!</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We&rsquo;re now serving up our assets directory, complete with an index file, and our two API endpoints.</p>
+
+<p>The <code>assets</code> method tells Ratpack to servce static assets from the assetsPath (defined as <code>"public"</code>) and to serve the index.html file as the index for that directory. Put simply, it lets us navigate to <a href="http://localhost:5050">http://localhost:5050</a> (or wherever you&rsquo;re hosting) and have index.html delivered right to us.</p>
+
+<p>Our endpoints are configured using the <code>prefix</code> closure, which allows us to nest handlers that should be prefixed by whatever we&rsquo;ve defined as the prefix. Our prefix is &ldquo;image,&rdquo; so every handler defined inside the closure will be accessed via <code>http://localhost:5050/image/</code>, followed by the handler&rsquo;s path.</p>
+
+<p>The first handler within the prefix closure is a <code>get</code> handler. With no path defined, the URL for this endpoint will be <a href="http://localhost:5050/image.">http://localhost:5050/image.</a> The endpoint will only respond to GET requests &ndash; anything else will result in Ratpack returning a 405 (Method Not Allowed) status. Later, we&rsquo;ll populate this handler with a call to ImageService to grab a list of all the uploaded images and send them to the client.</p>
+
+<p>The second handler is a <code>post</code> handler with a path defined. It functions similarly to the <code>get</code> handler, except it will only accept POST requests. Additionally, because we defined a path (&ldquo;upload&rdquo;), the endpoint will be <a href="http://localhost:5050/image/upload.">http://localhost:5050/image/upload.</a> We&rsquo;ll use this handler to send the uploaded image to ImageService for processing.</p>
+
+<p>So, how do we get access to ImageService within our handlers? If you remember from earlier in the post, we don&rsquo;t have a module for it so we were unable to add it in the bindings closure. We could always just new it up, but that&rsquo;s not necessary &ndash; the <code>prefix</code> handler uses Guice&rsquo;s just-in-time bindings, which means that injecting the service is as simple as declaring it as an argument to the closure.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">prefix</span><span class="o">(</span><span class="s2">&quot;image&quot;</span><span class="o">)</span> <span class="o">{</span> <span class="n">ImageService</span> <span class="n">imageService</span> <span class="o">-&gt;</span>
+</span><span class='line'>  <span class="c1">// handlers and stuff</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>One caveat to the JIT bindings is that they are only availabe on the <code>prefix</code> handler (<a href="http://forum.ratpack.io/AngularJS-Ratpack-File-Upload-tp655p659.html">source</a>) &ndash; you won&rsquo;t be able to use them on any of the other handlers such as <code>get</code> or <code>post</code>.</p>
+
+<p>Before we start filling out our handlers, we need to grab a reference to the image and thumbnail directories because we&rsquo;ll be passing them in to ImageService.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">prefix</span><span class="o">(</span><span class="s2">&quot;image&quot;</span><span class="o">)</span> <span class="o">{</span> <span class="n">ImageService</span> <span class="n">imageService</span> <span class="o">-&gt;</span>
+</span><span class='line'>  <span class="kt">def</span> <span class="n">baseDir</span> <span class="o">=</span> <span class="n">launchConfig</span><span class="o">.</span><span class="na">baseDir</span>
+</span><span class='line'>  <span class="kt">def</span> <span class="n">imageDir</span> <span class="o">=</span> <span class="n">baseDir</span><span class="o">.</span><span class="na">file</span><span class="o">(</span> <span class="n">imagePath</span> <span class="o">).</span><span class="na">toFile</span><span class="o">()</span>
+</span><span class='line'>  <span class="kt">def</span> <span class="n">thumbDir</span> <span class="o">=</span> <span class="n">baseDir</span><span class="o">.</span><span class="na">file</span><span class="o">(</span> <span class="n">thumbPath</span> <span class="o">).</span><span class="na">toFile</span><span class="o">()</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">get</span> <span class="o">{</span>
+</span><span class='line'>      <span class="c1">// do stuff!</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">post</span><span class="o">(</span><span class="s2">&quot;upload&quot;</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>      <span class="c1">// do other stuff!</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The <code>get</code> handler is nice and easy &ndash; we&rsquo;ll just make a call to <code>getUploadedImages</code>, which returns a promise. Once the promise is resolved, we&rsquo;ll receive a list of image filenames. We&rsquo;ll use the Ratpack <code>context.render</code> method to send the list of filenames and the location of the files back to the client.</p>
+
+<p>Promises are important to Ratpack because it&rsquo;s <a href="http://www.ratpack.io/manual/current/async.html#asynchronous__non_blocking">designed to function asynchronously</a>. By wrapping our blocking code &ndash; such as file or database operations &ndash; in a promise, we can take advantage of the performance gains inherent to Ratpack&rsquo;s asynchronous design.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">get</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">imageService</span><span class="o">.</span><span class="na">getUploadedImages</span><span class="o">(</span> <span class="n">imageDir</span> <span class="o">).</span><span class="na">then</span> <span class="o">{</span>
+</span><span class='line'>      <span class="n">render</span> <span class="nf">json</span><span class="o">(</span> <span class="nl">imagePath:</span> <span class="n">imageDirName</span><span class="o">,</span> <span class="nl">images:</span> <span class="n">it</span> <span class="o">)</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The JSON generated by the <code>get</code> handler will look something like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="nt">&quot;imagePath&quot;</span><span class="p">:</span> <span class="s2">&quot;uploaded-files&quot;</span><span class="p">,</span>
+</span><span class='line'>  <span class="nt">&quot;images&quot;</span><span class="p">:</span> <span class="p">[</span>
+</span><span class='line'>      <span class="s2">&quot;image1.png&quot;</span><span class="p">,</span>
+</span><span class='line'>      <span class="s2">&quot;image2.png&quot;</span><span class="p">,</span>
+</span><span class='line'>      <span class="s2">&quot;image3.png&quot;</span>
+</span><span class='line'>  <span class="p">]</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Our <code>post</code> handler will use the <code>context.parse</code> method to read the incoming POST request into a <a href="http://www.ratpack.io/manual/current/api/ratpack/form/Form.html">Form</a>. The Form class is basically a map with a handful of convenience methods for working with uploaded files. Once we&rsquo;ve parsed the form, we can use <code>form.file( formFieldName )</code> to grab a reference to the uploaded file (represented as an <a href="http://www.ratpack.io/manual/current/api/ratpack/form/UploadedFile.html">UploadedFile</a>).</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">post</span><span class="o">(</span><span class="s2">&quot;upload&quot;</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>  <span class="kt">def</span> <span class="n">form</span> <span class="o">=</span> <span class="n">parse</span> <span class="n">Form</span>
+</span><span class='line'>  <span class="kt">def</span> <span class="n">uploaded</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="na">file</span><span class="o">(</span> <span class="s2">&quot;fileUpload&quot;</span> <span class="o">)</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Once we&rsquo;ve got the file, we need to verify that the file being uploaded is an image and, if it is an image, process it, and if not, return an error to the client.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">post</span><span class="o">(</span><span class="s2">&quot;upload&quot;</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>  <span class="kt">def</span> <span class="n">form</span> <span class="o">=</span> <span class="n">parse</span> <span class="n">Form</span>
+</span><span class='line'>  <span class="kt">def</span> <span class="n">uploaded</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="na">file</span><span class="o">(</span> <span class="s2">&quot;fileUpload&quot;</span> <span class="o">)</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">if</span><span class="o">(</span> <span class="n">imageService</span><span class="o">.</span><span class="na">isImageFile</span><span class="o">(</span> <span class="n">uploaded</span> <span class="o">)</span> <span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>      <span class="n">imageService</span><span class="o">.</span><span class="na">process</span><span class="o">(</span> <span class="n">uploaded</span><span class="o">,</span> <span class="n">imageDir</span><span class="o">,</span> <span class="n">thumbDir</span> <span class="o">).</span><span class="na">then</span> <span class="o">{</span>
+</span><span class='line'>          <span class="n">render</span> <span class="nf">json</span><span class="o">(</span> <span class="nl">fileName:</span> <span class="n">it</span><span class="o">.</span><span class="na">name</span> <span class="o">)</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>  <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span><span class='line'>      <span class="n">response</span><span class="o">.</span><span class="na">status</span><span class="o">(</span><span class="mi">400</span><span class="o">).</span><span class="na">send</span> <span class="s2">&quot;Invalid file type. Images only!&quot;</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>And with that, our Ratpack configuration is complete. You can view Ratpack.groovy in its entirety <a href="https://github.com/s992/angular-ratpack-upload/blob/master/src/ratpack/Ratpack.groovy">here</a>.</p>
+
+<h3>ImageService.groovy</h3>
+
+<p>ImageService only has a handful of methods, so we&rsquo;ll just run through them quickly. As always, you can view the entire file <a href="https://github.com/s992/angular-ratpack-upload/blob/master/src/main/groovy/org/swalsh/image/ImageService.groovy">here</a>.</p>
+
+<p>First up is the constructor, which is annotated with <code>@Inject</code> and expecting a single argument: an instance of <a href="http://www.ratpack.io/manual/current/api/ratpack/exec/ExecControl.html">ExecControl</a> that will be injected by Guice. ExecControl is what gives us the ability to use Ratpack&rsquo;s promises.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="nd">@Inject</span>
+</span><span class='line'><span class="n">ImageService</span><span class="o">(</span> <span class="n">ExecControl</span> <span class="n">execControl</span> <span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>  <span class="k">this</span><span class="o">.</span><span class="na">execControl</span> <span class="o">=</span> <span class="n">execControl</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>There are also a few convenience methods that probably don&rsquo;t require an explanation. I suppose there are two things to note here:</p>
+
+<ol>
+<li>The <a href="http://www.ratpack.io/manual/current/api/ratpack/form/UploadedFile.html">UploadedFile</a> class provides us with easy access to the content type (e.g. &ldquo;image/jpeg&rdquo;) which makes it very easy to do a simple type check.</li>
+<li>UploadedFile (via <a href="http://www.ratpack.io/manual/current/api/ratpack/http/TypedData.html">TypedData</a>) provides a few ways for us to access the file contents: as raw data in a <a href="http://netty.io/4.0/api/io/netty/buffer/ByteBuf.html?is-external=true">ByteBuf</a>, as raw data as bytes (<code>byte[]</code>), or as an InputStream. In this case, we&rsquo;re using the input stream to read the file into a BufferedImage.</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">Boolean</span> <span class="nf">isImageFile</span><span class="o">(</span> <span class="n">UploadedFile</span> <span class="n">file</span> <span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">file</span><span class="o">.</span><span class="na">contentType</span><span class="o">.</span><span class="na">type</span><span class="o">.</span><span class="na">contains</span><span class="o">(</span> <span class="s2">&quot;image&quot;</span> <span class="o">)</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">String</span> <span class="nf">getUniqueFileName</span><span class="o">(</span> <span class="n">String</span> <span class="n">extension</span> <span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>  <span class="s2">&quot;${randomUUID()}.$extension&quot;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">BufferedImage</span> <span class="nf">readImage</span><span class="o">(</span> <span class="n">UploadedFile</span> <span class="n">file</span> <span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">ImageIO</span><span class="o">.</span><span class="na">read</span><span class="o">(</span> <span class="n">file</span><span class="o">.</span><span class="na">inputStream</span> <span class="o">)</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Next up, we&rsquo;ll use ExecControl to wrap a blocking interaction with a promise in <code>getUploadedImages</code>. This method returns a list of all the file names found in the application&rsquo;s image directory. As an aside, Groovy is freakin&#8217; awesome: look at that one liner to get the list. The code to retrieve the list was five lines long before Luke got his hands on it, and I can&rsquo;t complain.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">Promise</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;&gt;</span> <span class="n">getUploadedImages</span><span class="o">(</span> <span class="n">File</span> <span class="n">imageDirectory</span> <span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">execControl</span><span class="o">.</span><span class="na">blocking</span> <span class="o">{</span>
+</span><span class='line'>      <span class="n">imageDirectory</span><span class="o">.</span><span class="na">listFiles</span><span class="o">(</span> <span class="o">{</span> <span class="n">it</span><span class="o">.</span><span class="na">isFile</span><span class="o">()</span> <span class="o">}</span> <span class="k">as</span> <span class="n">FileFilter</span> <span class="o">).</span><span class="na">sort</span> <span class="o">{</span> <span class="n">it</span><span class="o">.</span><span class="na">lastModified</span><span class="o">()</span> <span class="o">}*.</span><span class="na">name</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Processing the image consists of grabbing a unique file name and then saving off both the full size image and the thumbnail. Once again, we&rsquo;re utilizing promises.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">Promise</span><span class="o">&lt;</span><span class="n">File</span><span class="o">&gt;</span> <span class="n">process</span><span class="o">(</span> <span class="n">UploadedFile</span> <span class="n">file</span><span class="o">,</span> <span class="n">File</span> <span class="n">imageDirectory</span><span class="o">,</span> <span class="n">File</span> <span class="n">thumbDirectory</span> <span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">String</span> <span class="n">fileName</span> <span class="o">=</span> <span class="n">getUniqueFileName</span><span class="o">(</span> <span class="s2">&quot;png&quot;</span> <span class="o">)</span>
+</span><span class='line'>  <span class="n">BufferedImage</span> <span class="n">image</span> <span class="o">=</span> <span class="n">readImage</span><span class="o">(</span> <span class="n">file</span> <span class="o">)</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">execControl</span><span class="o">.</span><span class="na">blocking</span> <span class="o">{</span>
+</span><span class='line'>      <span class="n">saveThumb</span><span class="o">(</span> <span class="n">image</span><span class="o">,</span> <span class="n">fileName</span><span class="o">,</span> <span class="n">thumbDirectory</span> <span class="o">)</span>
+</span><span class='line'>      <span class="n">saveImage</span><span class="o">(</span> <span class="n">image</span><span class="o">,</span> <span class="n">fileName</span><span class="o">,</span> <span class="n">imageDirectory</span> <span class="o">)</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The actual saving is pretty boring &ndash; we just use ImageIO to write the image file to disk. In the case of the thumbnail, we use imgscalr to resize it by setting the height to 100 pixels and then turn around and call <code>saveImage()</code> with the thumbnail.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='groovy'><span class='line'><span class="n">File</span> <span class="nf">saveImage</span><span class="o">(</span> <span class="n">BufferedImage</span> <span class="n">image</span><span class="o">,</span> <span class="n">String</span> <span class="n">fileName</span><span class="o">,</span> <span class="n">File</span> <span class="n">directory</span> <span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">File</span> <span class="n">file</span> <span class="o">=</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span> <span class="n">directory</span><span class="o">,</span> <span class="n">fileName</span> <span class="o">)</span>
+</span><span class='line'>  <span class="n">ImageIO</span><span class="o">.</span><span class="na">write</span><span class="o">(</span> <span class="n">image</span><span class="o">,</span> <span class="s2">&quot;png&quot;</span><span class="o">,</span> <span class="n">file</span> <span class="o">)</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">file</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">File</span> <span class="nf">saveThumb</span><span class="o">(</span> <span class="n">BufferedImage</span> <span class="n">image</span><span class="o">,</span> <span class="n">String</span> <span class="n">fileName</span><span class="o">,</span> <span class="n">File</span> <span class="n">directory</span> <span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">BufferedImage</span> <span class="n">thumb</span> <span class="o">=</span> <span class="n">Scalr</span><span class="o">.</span><span class="na">resize</span><span class="o">(</span> <span class="n">image</span><span class="o">,</span> <span class="n">Mode</span><span class="o">.</span><span class="na">FIT_TO_HEIGHT</span><span class="o">,</span> <span class="mi">100</span> <span class="o">)</span>
+</span><span class='line'>  <span class="n">saveImage</span><span class="o">(</span> <span class="n">thumb</span><span class="o">,</span> <span class="n">fileName</span><span class="o">,</span> <span class="n">directory</span> <span class="o">)</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Conclusion</h2>
+
+<p>That concludes the Ratpack/Groovy portion of our application. I&rsquo;ll describe the AngularJS app in part two, <a href="/blog/2014/09/17/file-uploads-with-angularjs-and-ratpack-part-2">here</a>. As always, please feel free to leave your comments and criticisms below!</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Sean Walsh</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-09-16T18:22:39-07:00" pubdate data-updated="true">Sep 16<span>th</span>, 2014</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/09/07/migrating-octopress-to-a-new-computer/" title="Previous Post: Migrating Octopress to a New Computer">&laquo; Migrating Octopress to a New Computer</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/09/17/file-uploads-with-angularjs-and-ratpack-part-2/" title="Next Post: File Uploads with AngularJS and Ratpack: Part 2">File Uploads with AngularJS and Ratpack: Part 2 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+<!-- 
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/09/17/file-uploads-with-angularjs-and-ratpack-part-2/">File Uploads With AngularJS and Ratpack: Part 2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/16/file-uploads-with-angularjs-and-ratpack-part-1/">File Uploads With AngularJS and Ratpack: Part 1</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/07/migrating-octopress-to-a-new-computer/">Migrating Octopress to a New Computer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/08/26/ratpack-first-impressions/">Ratpack: First Impressions</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/07/17/running-the-groovy-console-from-gradle/">Running the Groovy Console From Gradle</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/s992">@s992</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 's992',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+  
+</aside>
+ -->
+
+    </div>
+  </div>
+  <!-- <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Sean Walsh -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+
+
+</footer> -->
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'swalsh';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://swalsh.org/blog/2014/09/16/file-uploads-with-angularjs-and-ratpack-part-1/';
+        var disqus_url = 'http://swalsh.org/blog/2014/09/16/file-uploads-with-angularjs-and-ratpack-part-1/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+  
+  <aside class="sidebar">
+    
+      <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/09/17/file-uploads-with-angularjs-and-ratpack-part-2/">File Uploads With AngularJS and Ratpack: Part 2</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/16/file-uploads-with-angularjs-and-ratpack-part-1/">File Uploads With AngularJS and Ratpack: Part 1</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/07/migrating-octopress-to-a-new-computer/">Migrating Octopress to a New Computer</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/08/26/ratpack-first-impressions/">Ratpack: First Impressions</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/07/17/running-the-groovy-console-from-gradle/">Running the Groovy Console From Gradle</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/s992">@s992</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 's992',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+
+    
+  </aside>
+  
+</body>
+
+
+</html>
