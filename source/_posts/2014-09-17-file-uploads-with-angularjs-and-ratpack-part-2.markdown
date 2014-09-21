@@ -349,6 +349,6 @@ Once it's up and running, we can point our browser to http://localhost:5050 and 
 
 ## Conclusion
 
-That wraps up part two of this two part series. You can find the full source of this project Github at [https://github.com/s992/angular-ratpack-upload](https://github.com/s992/angular-ratpack-upload). If I did my job right, you probably now know more than you ever cared to about file uploads. :)
+That wraps up part two of this two part series. You can find the full source of this project on Github at [https://github.com/s992/angular-ratpack-upload](https://github.com/s992/angular-ratpack-upload). If I did my job right, you probably now know more than you ever cared to about file uploads. :)
 
 Thanks for reading!
